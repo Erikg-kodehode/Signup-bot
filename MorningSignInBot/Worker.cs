@@ -1,16 +1,16 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore; // Needed for DB check in button handler
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MorningSignInBot.Configuration; // Use correct namespace
-using MorningSignInBot.Data; // Use correct namespace
-using MorningSignInBot.Services; // Use correct namespace
+using MorningSignInBot.Configuration;
+using MorningSignInBot.Data;
+using MorningSignInBot.Services;
 using System;
-using System.Linq; // For AnyAsync
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,12 +57,13 @@ namespace MorningSignInBot
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
 
-            try
-            {
-                await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-                _logger.LogInformation("Interaction modules loaded.");
-            }
-            catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules."); }
+            // try // Temporarily commented out for diagnostics
+            // {
+            //     // Temporarily commented out to diagnose DI scope error
+            //     // await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            _logger.LogInformation("Interaction module loading skipped in StartAsync for diagnostics.");
+            // }
+            // catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules."); }
 
             await _client.LoginAsync(TokenType.Bot, _settings.BotToken);
             await _client.StartAsync();
@@ -83,24 +84,30 @@ namespace MorningSignInBot
                 _client.Log -= LogAsync;
                 _client.Ready -= OnReadyAsync;
                 _client.InteractionCreated -= HandleInteractionAsync;
-                await _client.StopAsync();
-                await _client.LogoutAsync();
+                try { await _client.StopAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client stop."); }
+                try { await _client.LogoutAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client logout."); }
             }
             await base.StopAsync(cancellationToken);
         }
 
         private async Task OnReadyAsync()
         {
-            _logger.LogInformation("Discord client is ready. Registering commands...");
+            _logger.LogInformation("Discord client is ready.");
 
+            // Temporarily commented out module loading for diagnostics
+            // try
+            // {
+            //     await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            //     _logger.LogInformation("Interaction modules loaded from OnReadyAsync.");
+            // }
+            // catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules from OnReadyAsync."); }
+
+
+            // Command Registration (will likely fail if modules aren't loaded, but keep for structure)
+            _logger.LogInformation("Attempting to register commands (may fail if modules not loaded)...");
             try
             {
-                // Register commands globally - takes up to an hour
-                // await _interactionService.RegisterCommandsGloballyAsync(true);
-                // _logger.LogInformation("Registered commands globally.");
-
-                // OR register to a specific guild for instant updates (replace 0 with your guild ID)
-                ulong testGuildId = 0; // <-- SET YOUR TEST GUILD ID HERE!
+                ulong testGuildId = 0; // <-- SET YOUR TEST GUILD ID HERE! 0 for global registration
                 if (testGuildId != 0)
                 {
                     await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true);
@@ -108,15 +115,14 @@ namespace MorningSignInBot
                 }
                 else
                 {
-                    _logger.LogWarning("Test Guild ID not set. Commands might need global registration (takes time).");
+                    _logger.LogWarning("Test Guild ID not set. Attempting global command registration.");
                     await _interactionService.RegisterCommandsGloballyAsync(true);
                     _logger.LogInformation("Attempting global command registration.");
                 }
-
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to register interaction commands.");
+                _logger.LogError(ex, "Failed to register interaction commands (expected if modules not loaded).");
             }
 
             ScheduleNextSignInMessage();
@@ -124,6 +130,7 @@ namespace MorningSignInBot
 
         private async Task HandleInteractionAsync(SocketInteraction interaction)
         {
+            // Note: Command execution will fail if modules aren't loaded
             try
             {
                 if (interaction is SocketMessageComponent componentInteraction)
@@ -142,17 +149,18 @@ namespace MorningSignInBot
                     }
                 }
 
+                // This part will likely throw exceptions if AddModulesAsync was commented out
                 var ctx = new SocketInteractionContext(_client, interaction);
                 await _interactionService.ExecuteCommandAsync(ctx, _services);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling interaction.");
+                _logger.LogError(ex, "Error handling interaction (may be due to modules not loaded).");
                 if (interaction.Type == InteractionType.ApplicationCommand || interaction.Type == InteractionType.MessageComponent)
                 {
                     try
                     {
-                        var errorMsg = "En feil oppstod.";
+                        var errorMsg = "En feil oppstod (muligens kommandoer ikke lastet).";
                         if (!interaction.HasResponded) await interaction.RespondAsync(errorMsg, ephemeral: true);
                         else await interaction.FollowupAsync(errorMsg, ephemeral: true);
                     }
@@ -168,15 +176,14 @@ namespace MorningSignInBot
 
             try
             {
-                // Defer or respond immediately before DB operation
-                await interaction.DeferAsync(ephemeral: true); // Defer allows more time
+                await interaction.DeferAsync(ephemeral: true);
 
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
-                    DateTime startOfDay = DateTime.Today.ToUniversalTime(); // Compare with UTC dates
+                    DateTime startOfDayUtc = DateTime.UtcNow.Date;
                     bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s =>
-                        s.UserId == interaction.User.Id && s.Timestamp >= startOfDay);
+                        s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
 
                     if (alreadySignedIn)
                     {
@@ -187,7 +194,7 @@ namespace MorningSignInBot
 
                     var entry = new SignInEntry(
                         userId: interaction.User.Id,
-                        username: interaction.User.GlobalName ?? interaction.User.Username, // Prefer GlobalName
+                        username: interaction.User.GlobalName ?? interaction.User.Username,
                         timestamp: DateTime.UtcNow,
                         signInType: signInType
                     );
@@ -196,7 +203,7 @@ namespace MorningSignInBot
                     await dbContext.SaveChangesAsync();
 
                     _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType);
-                    await interaction.FollowupAsync(responseMessage, ephemeral: true); // Send confirmation after save
+                    await interaction.FollowupAsync(responseMessage, ephemeral: true);
                 }
             }
             catch (Exception ex)
@@ -235,10 +242,18 @@ namespace MorningSignInBot
             _logger.LogDebug("Timer triggered for daily message.");
             try
             {
-                await _notificationService.SendDailySignInAsync();
+                if (_client.ConnectionState == ConnectionState.Connected)
+                {
+                    await _notificationService.SendDailySignInAsync();
+                }
+                else
+                {
+                    _logger.LogWarning("Timer ticked but client was not connected. Skipping send.");
+                }
+
             }
             catch (Exception ex) { _logger.LogError(ex, "Error executing scheduled task via NotificationService."); }
-            finally { ScheduleNextSignInMessage(); } // Always reschedule
+            finally { ScheduleNextSignInMessage(); }
         }
 
         private Task LogAsync(LogMessage log)

@@ -4,24 +4,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MorningSignInBot;
-using MorningSignInBot.Data;
+using MorningSignInBot.Data; // Added correct using
 
 #nullable disable
 
 namespace MorningSignInBot.Migrations
 {
     [DbContext(typeof(SignInContext))]
-    [Migration("20250422110325_InitialCreate")]
+    [Migration("20250422110325_InitialCreate")] // Use your actual migration ID
     partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.4"); // Match your EF Core version
 
-            modelBuilder.Entity("MorningSignInBot.SignInEntry", b =>
+            modelBuilder.Entity("MorningSignInBot.Data.SignInEntry", b => // Use correct namespace
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

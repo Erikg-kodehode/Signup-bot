@@ -1,0 +1,42 @@
+2025-04-23 10:21:35.403 +02:00 [INF] () Starting host builder...
+2025-04-23 10:21:36.428 +02:00 [INF] () Applying database migrations...
+2025-04-23 10:21:36.494 +02:00 [INF] (MorningSignInBot.Data.SignInContext) Created database directory: C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\bin\Debug\net8.0\Data
+2025-04-23 10:21:37.165 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 10:21:37.168 +02:00 [INF] () Starting application host...
+2025-04-23 10:21:37.226 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 10:21:37.250 +02:00 [ERR] (MorningSignInBot.Worker) Error loading interaction modules.
+System.InvalidOperationException: Cannot resolve scoped service 'MorningSignInBot.Data.SignInContext' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at Discord.Interactions.ReflectionUtils`1.GetMember(InteractionService commandService, IServiceProvider services, Type memberType, TypeInfo ownerType)
+   at Discord.Interactions.ReflectionUtils`1.<>c__DisplayClass2_0.<CreateBuilder>b__0(IServiceProvider services)
+   at Discord.Interactions.ReflectionUtils`1.CreateObject(TypeInfo typeInfo, InteractionService commandService, IServiceProvider services)
+   at Discord.Interactions.Builders.ModuleBuilder.Build(InteractionService interactionService, IServiceProvider services, ModuleInfo parent)
+   at Discord.Interactions.Builders.ModuleClassBuilder.BuildAsync(IEnumerable`1 validTypes, InteractionService commandService, IServiceProvider services)
+   at Discord.Interactions.InteractionService.AddModulesAsync(Assembly assembly, IServiceProvider services)
+   at MorningSignInBot.Worker.StartAsync(CancellationToken cancellationToken) in C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\Worker.cs:line 62
+2025-04-23 10:21:37.275 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 10:21:37.283 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 10:21:38.378 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 10:21:38.879 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 10:21:38.881 +02:00 [WRN] (MorningSignInBot.Worker) Test Guild ID not set. Commands might need global registration (takes time).
+2025-04-23 10:21:39.335 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
+2025-04-23 10:21:39.338 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "21:38:20.6622976")
+2025-04-23 10:21:39.346 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 10:30:45.796 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 10:34:52.255 +02:00 [INF] () Starting host builder...
+2025-04-23 10:34:52.318 +02:00 [INF] () Applying database migrations...
+2025-04-23 10:34:52.680 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 10:34:52.682 +02:00 [INF] () Starting application host...
+2025-04-23 10:34:52.721 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 10:34:52.723 +02:00 [INF] (MorningSignInBot.Worker) Interaction module loading skipped in StartAsync for diagnostics.
+2025-04-23 10:34:52.726 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 10:34:52.736 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 10:34:53.745 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 10:34:54.253 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready.
+2025-04-23 10:34:54.254 +02:00 [INF] (MorningSignInBot.Worker) Attempting to register commands (may fail if modules not loaded)...
+2025-04-23 10:34:54.255 +02:00 [WRN] (MorningSignInBot.Worker) Test Guild ID not set. Attempting global command registration.
+2025-04-23 10:34:54.573 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
+2025-04-23 10:34:54.575 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "21:25:05.4251077")
+2025-04-23 10:34:54.581 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready

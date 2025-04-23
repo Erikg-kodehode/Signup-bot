@@ -1,8 +1,8 @@
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.Logging; // Correct namespace for logging
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MorningSignInBot.Configuration; // Correct namespace
+using MorningSignInBot.Configuration;
 using System;
 using System.Threading.Tasks;
 
@@ -45,14 +45,12 @@ namespace MorningSignInBot.Services
                     return;
                 }
 
-                // Ensure client is ready before getting channel
                 if (_client.ConnectionState != ConnectionState.Connected)
                 {
                     _logger.LogWarning("Cannot send message: Discord client not connected.");
                     return;
                 }
 
-                // Use GetChannelAsync for potentially better results
                 var channel = await _client.GetChannelAsync(channelId);
                 if (channel is not ITextChannel targetChannel)
                 {

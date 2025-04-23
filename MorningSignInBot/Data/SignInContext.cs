@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MorningSignInBot.Configuration; // Use correct namespace
+using MorningSignInBot.Configuration;
 using System;
 using System.IO;
 
@@ -12,7 +13,7 @@ namespace MorningSignInBot.Data
 
         private readonly string _dbPath;
 
-        public SignInContext(IOptions<DatabaseSettings> dbSettings, ILogger<SignInContext> logger) // Added Logger
+        public SignInContext(IOptions<DatabaseSettings> dbSettings, ILogger<SignInContext> logger)
         {
             string relativePath = dbSettings.Value.Path;
             string basePath = AppContext.BaseDirectory;
@@ -29,7 +30,6 @@ namespace MorningSignInBot.Data
                 catch (Exception ex)
                 {
                     logger.LogError(ex, "Failed to create database directory: {Directory}", directory);
-                    // Rethrow or handle appropriately if directory creation is critical
                     throw;
                 }
             }

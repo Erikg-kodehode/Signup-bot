@@ -2,8 +2,8 @@ using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MorningSignInBot.Data; // Correct namespace
-using MorningSignInBot.Services; // Correct namespace
+using MorningSignInBot.Data;
+using MorningSignInBot.Services;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -40,7 +40,7 @@ namespace MorningSignInBot.Interactions
             if (string.IsNullOrWhiteSpace(datoString)) { targetDate = DateTime.Today; }
             else if (!DateTime.TryParseExact(datoString, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out targetDate))
             {
-                await FollowupAsync($"Ugyldig datoformat. Bruk YYYY-MM-DD.", ephemeral: true);
+                await FollowupAsync($"Ugyldig datoformat. Bruk formatet YYYY-MM-DD.", ephemeral: true);
                 return;
             }
 
@@ -54,7 +54,7 @@ namespace MorningSignInBot.Interactions
                 var signIns = await _dbContext.SignIns
                     .Where(s => s.Timestamp >= startOfDayUtc && s.Timestamp <= endOfDayUtc)
                     .OrderBy(s => s.Timestamp)
-                    .AsNoTracking() // Read-only query
+                    .AsNoTracking()
                     .ToListAsync();
 
                 if (!signIns.Any())
