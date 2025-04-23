@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iPuNZWjQ8K8=",
+  "dgSpecHash": "iC8k95ISdaI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
+  "projectFilePath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\morningSigninBot\\MorningSignInBot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\erikg\\.nuget\\packages\\discord.net\\3.17.2\\discord.net.3.17.2.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\discord.net.commands\\3.17.2\\discord.net.commands.3.17.2.nupkg.sha512",

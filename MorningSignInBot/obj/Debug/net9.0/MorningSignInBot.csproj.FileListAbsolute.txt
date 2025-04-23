@@ -171,3 +171,4 @@ C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\bin\Debug\net9.0\runtim
 C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\bin\Debug\net9.0\runtimes\win-arm64\native\e_sqlite3.dll
 C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\bin\Debug\net9.0\runtimes\win-x64\native\e_sqlite3.dll
 C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\bin\Debug\net9.0\runtimes\win-x86\native\e_sqlite3.dll
+C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\obj\Debug\net9.0\MorningSignInBot.sourcelink.json
