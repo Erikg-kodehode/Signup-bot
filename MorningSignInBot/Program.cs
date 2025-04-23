@@ -2,15 +2,17 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration; // Needed for ConfigurationBuilder
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging; // Required for Log.Information etc. usage below
-using MorningSignInBot.Configuration; // Use correct namespace
-using MorningSignInBot.Data;         // Use correct namespace
-using MorningSignInBot.Services;    // Use correct namespace
+using Microsoft.Extensions.Logging;
+using MorningSignInBot.Configuration;
+using MorningSignInBot.Data;
+using MorningSignInBot.Services;
 using Serilog;
 using System;
-using System.Threading.Tasks; // Required for Task
+using System.IO; // Needed for Directory.GetCurrentDirectory()
+using System.Threading.Tasks;
 
 namespace MorningSignInBot
 {
@@ -18,19 +20,29 @@ namespace MorningSignInBot
     {
         public static async Task Main(string[] args)
         {
-            // Configure Serilog for bootstrap logging first
+            // --- MODIFICATION START ---
+            // Build configuration separately first for bootstrap logging
+            var bootstrapConfig = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true)
+                .AddEnvironmentVariables() // Also read env variables for bootstrap if needed
+                .Build();
+
+            // Configure Serilog for bootstrap logging first, using the built config
             Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(Host.CreateDefaultBuilder(args).Build().Configuration)
+                .ReadFrom.Configuration(bootstrapConfig) // Use the separately built config
                 .Enrich.FromLogContext()
                 .WriteTo.Console()
                 .CreateBootstrapLogger();
+            // --- MODIFICATION END ---
 
             try
             {
                 Log.Information("Starting host builder...");
 
-                IHost host = Host.CreateDefaultBuilder(args)
-                    .UseSerilog((context, services, configuration) => configuration
+                IHost host = Host.CreateDefaultBuilder(args) // CreateDefaultBuilder will load its own config (appsettings, env vars, user secrets, etc.)
+                    .UseSerilog((context, services, configuration) => configuration // Configure Serilog using the host's context and config
                         .ReadFrom.Configuration(context.Configuration)
                         .ReadFrom.Services(services)
                         .Enrich.FromLogContext())
@@ -49,8 +61,8 @@ namespace MorningSignInBot
                             GatewayIntents = GatewayIntents.Guilds
                                        | GatewayIntents.GuildMessages
                                        | GatewayIntents.GuildMembers
-                                       | GatewayIntents.MessageContent, // Ensure necessary intents
-                            LogLevel = LogSeverity.Info // Let Serilog handle filtering
+                                       | GatewayIntents.MessageContent,
+                            LogLevel = LogSeverity.Info
                         };
                         services.AddSingleton(discordConfig);
                         services.AddSingleton<DiscordSocketClient>();
@@ -66,7 +78,7 @@ namespace MorningSignInBot
                     })
                     .Build();
 
-                // Apply Migrations
+                // Apply Migrations (remains the same)
                 Log.Information("Applying database migrations...");
                 var scopeFactory = host.Services.GetRequiredService<IServiceScopeFactory>();
                 using (var scope = scopeFactory.CreateScope())
@@ -84,7 +96,7 @@ namespace MorningSignInBot
                     }
                 }
 
-                // Run Host
+                // Run Host (remains the same)
                 Log.Information("Starting application host...");
                 await host.RunAsync();
 
@@ -95,7 +107,7 @@ namespace MorningSignInBot
             }
             finally
             {
-                Log.CloseAndFlush(); // Ensure logs are flushed on exit
+                Log.CloseAndFlush();
             }
         }
     }

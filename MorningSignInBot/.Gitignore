@@ -1,0 +1,37 @@
+# Dependencies
+**/[Bb]in/
+**/[Oo]bj/
+
+# Secrets
+secrets.json
+appsettings.*.json # If you have environment-specific secrets NOT for repo
+!appsettings.Development.json # Example: Keep Development if it has no secrets
+
+# EF Core / SQLite files
+*.db
+*.db-shm
+*.db-wal
+**/Data/*.db
+**/Data/*.db-shm
+**/Data/*.db-wal
+
+# User Secrets
+**/secrets.json
+
+# Rider / VS specific
+.idea/
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]uild/
+[Rr]elease/
+[Dd]ebug/
+[Pp]ublish/
+
+# Misc
+*.DS_Store
+Thumbs.db
