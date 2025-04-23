@@ -1,0 +1,30 @@
+# Ignore build artifacts
+bin/
+obj/
+
+# Ignore local user settings and secrets
+.vs/
+.vscode/
+*.user
+*.suo
+secrets.json
+
+# Ignore Git files
+.git/
+.gitignore
+
+# Ignore Docker files themselves
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Ignore local database file (it should be managed by a volume)
+*.db
+*.db-shm
+*.db-wal
+Data/*.db
+Data/*.db-shm
+Data/*.db-wal
+
+# Ignore logs folder
+Logs/

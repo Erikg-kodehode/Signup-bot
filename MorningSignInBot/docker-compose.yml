@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  signin-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: morning-signin-bot
+    restart: unless-stopped
+    environment:
+      # Read the bot token from the .env file (or host environment)
+      - Discord__BotToken=${DISCORD_BOT_TOKEN_IN_ENV} # Reads value from .env file
+      # Set the .NET environment
+      - DOTNET_ENVIRONMENT=Production
+    volumes:
+      # Map persistent volumes for data and logs
+      - bot-data:/app/Data
+      - bot-logs:/app/Logs
+
+volumes:
+  bot-data:
+  bot-logs:

@@ -41,3 +41,354 @@ System.InvalidOperationException: Cannot resolve scoped service 'MorningSignInBo
 2025-04-23 10:34:54.575 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "21:25:05.4251077")
 2025-04-23 10:34:54.581 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
 2025-04-23 10:54:10.443 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 10:56:05.959 +02:00 [INF] () Starting host builder...
+2025-04-23 10:56:06.023 +02:00 [INF] () Applying database migrations...
+2025-04-23 10:56:06.345 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 10:56:06.347 +02:00 [INF] () Starting application host...
+2025-04-23 10:56:06.382 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 10:56:06.419 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 10:56:06.423 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 10:56:06.431 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 10:56:07.492 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 10:56:07.997 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 10:56:07.999 +02:00 [WRN] (MorningSignInBot.Worker) Test Guild ID not set. Attempting global command registration (may take up to an hour).
+2025-04-23 10:56:08.330 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
+2025-04-23 10:56:08.331 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "21:03:51.6687781")
+2025-04-23 10:56:08.335 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:04:52.660 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:07:33.590 +02:00 [INF] () Starting host builder...
+2025-04-23 11:07:33.650 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:07:33.976 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:07:33.979 +02:00 [INF] () Starting application host...
+2025-04-23 11:07:34.017 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:07:34.051 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:07:34.055 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:07:34.062 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:07:35.141 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:07:35.641 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:07:35.643 +02:00 [WRN] (MorningSignInBot.Worker) Test Guild ID not set. Attempting global command registration (may take up to an hour).
+2025-04-23 11:07:35.980 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
+2025-04-23 11:07:35.981 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:52:24.0190202")
+2025-04-23 11:07:35.984 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:09:48.449 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:12:51.032 +02:00 [INF] () Starting host builder...
+2025-04-23 11:12:51.091 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:12:51.423 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:12:51.425 +02:00 [INF] () Starting application host...
+2025-04-23 11:12:51.455 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:12:51.489 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:12:51.492 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:12:51.501 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:12:52.369 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:12:52.874 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:12:52.875 +02:00 [WRN] (MorningSignInBot.Worker) Test Guild ID not set. Attempting global command registration (may take up to an hour).
+2025-04-23 11:12:53.390 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
+2025-04-23 11:12:53.392 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:47:06.6076396")
+2025-04-23 11:12:53.395 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:16:11.863 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:18:26.240 +02:00 [INF] () Starting host builder...
+2025-04-23 11:18:26.301 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:18:26.702 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:18:26.705 +02:00 [INF] () Starting application host...
+2025-04-23 11:18:26.741 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:18:26.781 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:18:26.784 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:18:26.794 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:18:27.721 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:18:28.224 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:18:28.528 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:18:28.532 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:41:31.4679473")
+2025-04-23 11:18:28.536 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:18:31.846 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:19:14.867 +02:00 [INF] () Starting host builder...
+2025-04-23 11:19:14.925 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:19:15.252 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:19:15.254 +02:00 [INF] () Starting application host...
+2025-04-23 11:19:15.285 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:19:15.319 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:19:15.323 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:19:15.330 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:19:16.266 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:19:16.779 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:19:17.092 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:19:17.095 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:40:42.9048549")
+2025-04-23 11:19:17.098 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:20:02.014 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 11:20:02.823 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 11:20:13.948 +02:00 [INF] (MorningSignInBot.Worker) User Erik (1328290920105381980) signed in as Kontor.
+2025-04-23 11:20:45.280 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23
+2025-04-23 11:26:06.313 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:32:00.151 +02:00 [INF] () Starting host builder...
+2025-04-23 11:32:00.214 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:32:00.541 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:32:00.543 +02:00 [INF] () Starting application host...
+2025-04-23 11:32:00.573 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:32:00.604 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:32:00.608 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:32:00.615 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:32:01.620 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:32:02.132 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:32:02.448 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:32:02.450 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:27:57.5493307")
+2025-04-23 11:32:02.453 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:32:55.805 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:32:58.643 +02:00 [INF] () Starting host builder...
+2025-04-23 11:32:58.698 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:32:59.017 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:32:59.020 +02:00 [INF] () Starting application host...
+2025-04-23 11:32:59.055 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:32:59.089 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:32:59.094 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:32:59.101 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:33:00.096 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:33:00.608 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:33:00.856 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:33:00.859 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:26:59.1407981")
+2025-04-23 11:33:00.861 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:33:11.167 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 11:33:11.944 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 11:33:17.698 +02:00 [WRN] (MorningSignInBot.Worker) User fjorfott2 (1328290920105381980) tried to sign in again today.
+2025-04-23 11:33:35.773 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Admin
+2025-04-23 11:38:09.663 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:38:25.523 +02:00 [INF] () Starting host builder...
+2025-04-23 11:38:25.581 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:38:25.895 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:38:25.898 +02:00 [INF] () Starting application host...
+2025-04-23 11:38:25.931 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:38:25.965 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:38:25.969 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:38:25.977 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:38:26.857 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:38:27.359 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:38:27.646 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:38:27.648 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:21:32.3515896")
+2025-04-23 11:38:27.651 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:39:00.593 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 11:39:01.822 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 11:42:29.914 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:42:33.045 +02:00 [INF] () Starting host builder...
+2025-04-23 11:42:33.107 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:42:33.441 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:42:33.443 +02:00 [INF] () Starting application host...
+2025-04-23 11:42:33.476 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:42:33.508 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:42:33.511 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:42:33.520 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:42:34.374 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:42:34.875 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:42:35.125 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:42:35.128 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:17:24.8720251")
+2025-04-23 11:42:35.130 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:43:15.011 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 11:43:16.304 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 11:43:19.978 +02:00 [WRN] (MorningSignInBot.Worker) User fjorfott2 (1328290920105381980) tried to sign in again today.
+2025-04-23 11:46:03.578 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:50:47.178 +02:00 [INF] () Starting host builder...
+2025-04-23 11:50:47.236 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:50:47.559 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:50:47.562 +02:00 [INF] () Starting application host...
+2025-04-23 11:50:47.594 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:50:47.629 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:50:47.631 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:50:47.639 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:50:48.551 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:50:49.060 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:50:49.331 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:50:49.334 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:09:10.6652298")
+2025-04-23 11:50:49.337 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:51:03.288 +02:00 [WRN] (MorningSignInBot.Worker) User fjorfott2 (1328290920105381980) tried to sign in again today.
+2025-04-23 11:55:12.021 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:56:59.637 +02:00 [INF] () Starting host builder...
+2025-04-23 11:56:59.699 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:57:00.029 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:57:00.032 +02:00 [INF] () Starting application host...
+2025-04-23 11:57:00.071 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:57:00.105 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:57:00.108 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:57:00.116 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:57:01.225 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:57:01.717 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:57:02.289 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:57:02.292 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:02:57.7077327")
+2025-04-23 11:57:02.295 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 11:57:18.566 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 11:57:19.255 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 11:57:27.438 +02:00 [WRN] (MorningSignInBot.Worker) User fjorfott2 (1328290920105381980) tried to sign in again today.
+2025-04-23 11:57:46.836 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 attempting delete for user fjorfott2 (1328290920105381980) on 2025-04-23
+2025-04-23 11:57:46.997 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Deleted entry ID 1 for fjorfott2 on 2025-04-23
+2025-04-23 11:57:54.496 +02:00 [INF] (MorningSignInBot.Worker) User Erik (1328290920105381980) signed in as Kontor.
+2025-04-23 11:58:09.254 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 attempting delete for user fjorfott2 (1328290920105381980) on 2025-04-23
+2025-04-23 11:58:09.261 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Deleted entry ID 2 for fjorfott2 on 2025-04-23
+2025-04-23 11:59:18.054 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 11:59:21.481 +02:00 [INF] () Starting host builder...
+2025-04-23 11:59:21.540 +02:00 [INF] () Applying database migrations...
+2025-04-23 11:59:21.859 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 11:59:21.862 +02:00 [INF] () Starting application host...
+2025-04-23 11:59:21.895 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 11:59:21.932 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 11:59:21.936 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 11:59:21.943 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 11:59:22.785 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 11:59:23.280 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 11:59:23.593 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 11:59:23.597 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "20:00:36.4029693")
+2025-04-23 11:59:23.600 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 12:15:31.574 +02:00 [INF] (MorningSignInBot.Worker) User Erik (1328290920105381980) signed in as Hjemmekontor.
+2025-04-23 12:15:42.663 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Admin
+2025-04-23 12:27:16.594 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] null
+System.Net.WebSockets.WebSocketException (0x80004005): WebSocket connection was closed
+ ---> System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed the WebSocket connection without completing the close handshake.
+   at System.Net.WebSockets.ManagedWebSocket.ThrowEOFUnexpected()
+   at System.Net.WebSockets.ManagedWebSocket.EnsureBufferContainsAsync(Int32 minimumRequiredBytes, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask`1.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at Discord.Net.WebSockets.DefaultWebSocketClient.RunAsync(CancellationToken cancelToken)
+   at Discord.ConnectionManager.<>c__DisplayClass29_0.<<StartAsync>b__0>d.MoveNext()
+2025-04-23 12:27:16.613 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnecting
+2025-04-23 12:27:16.618 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnected
+2025-04-23 12:27:17.634 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 12:27:18.108 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Resumed previous session
+2025-04-23 12:27:18.108 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 12:28:50.225 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 12:28:56.950 +02:00 [INF] () Starting host builder...
+2025-04-23 12:28:58.028 +02:00 [INF] () Applying database migrations...
+2025-04-23 12:28:58.778 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 12:28:58.781 +02:00 [INF] () Starting application host...
+2025-04-23 12:28:58.815 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 12:28:58.850 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 12:28:58.854 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 12:28:58.863 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 12:28:59.754 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 12:29:00.261 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 12:29:00.559 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 12:29:00.562 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "19:30:59.4376909")
+2025-04-23 12:29:00.566 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 12:29:12.685 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 12:29:13.304 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 12:29:34.377 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Ingen
+2025-04-23 12:30:24.419 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Admin
+2025-04-23 13:08:56.894 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] null
+System.Net.WebSockets.WebSocketException (0x80004005): WebSocket connection was closed
+ ---> System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed the WebSocket connection without completing the close handshake.
+ ---> System.IO.IOException: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+ ---> System.Net.Sockets.SocketException (10054): An existing connection was forcibly closed by the remote host.
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.ReadBufferedAsyncCore(Memory`1 destination)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.RawConnectionStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.IO.Stream.ReadAtLeastAsyncCore(Memory`1 buffer, Int32 minimumBytes, Boolean throwOnEndOfStream, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.EnsureBufferContainsAsync(Int32 minimumRequiredBytes, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask`1.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at Discord.Net.WebSockets.DefaultWebSocketClient.RunAsync(CancellationToken cancelToken)
+   at Discord.ConnectionManager.<>c__DisplayClass29_0.<<StartAsync>b__0>d.MoveNext()
+2025-04-23 13:08:56.914 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnecting
+2025-04-23 13:08:56.917 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnected
+2025-04-23 13:08:57.920 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 13:08:58.319 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] Failed to resume previous session
+2025-04-23 13:08:58.544 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 13:08:59.054 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 13:08:59.321 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 13:08:59.323 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "18:51:00.6767669")
+2025-04-23 13:08:59.323 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 13:16:39.699 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] null
+System.Net.WebSockets.WebSocketException (0x80004005): WebSocket connection was closed
+ ---> System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed the WebSocket connection without completing the close handshake.
+ ---> System.IO.IOException: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+ ---> System.Net.Sockets.SocketException (10054): An existing connection was forcibly closed by the remote host.
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.ReadBufferedAsyncCore(Memory`1 destination)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.RawConnectionStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.IO.Stream.ReadAtLeastAsyncCore(Memory`1 buffer, Int32 minimumBytes, Boolean throwOnEndOfStream, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.EnsureBufferContainsAsync(Int32 minimumRequiredBytes, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask`1.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at Discord.Net.WebSockets.DefaultWebSocketClient.RunAsync(CancellationToken cancelToken)
+   at Discord.ConnectionManager.<>c__DisplayClass29_0.<<StartAsync>b__0>d.MoveNext()
+2025-04-23 13:16:39.704 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnecting
+2025-04-23 13:16:39.704 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnected
+2025-04-23 13:16:40.716 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 13:16:41.055 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] Failed to resume previous session
+2025-04-23 13:16:41.265 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 13:16:41.768 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 13:16:42.016 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 13:16:42.019 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "18:43:17.9804127")
+2025-04-23 13:16:42.022 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 13:29:46.780 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] null
+System.Net.WebSockets.WebSocketException (0x80004005): WebSocket connection was closed
+ ---> System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed the WebSocket connection without completing the close handshake.
+ ---> System.IO.IOException: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..
+ ---> System.Net.Sockets.SocketException (10054): An existing connection was forcibly closed by the remote host.
+   --- End of inner exception stack trace ---
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.ReadBufferedAsyncCore(Memory`1 destination)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.Http.HttpConnection.RawConnectionStream.ReadAsync(Memory`1 buffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.IO.Stream.ReadAtLeastAsyncCore(Memory`1 buffer, Int32 minimumBytes, Boolean throwOnEndOfStream, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.EnsureBufferContainsAsync(Int32 minimumRequiredBytes, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TResult](Memory`1 payloadBuffer, CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at System.Threading.Tasks.ValueTask`1.ValueTaskSourceAsTask.<>c.<.cctor>b__4_0(Object state)
+--- End of stack trace from previous location ---
+   at Discord.Net.WebSockets.DefaultWebSocketClient.RunAsync(CancellationToken cancelToken)
+   at Discord.ConnectionManager.<>c__DisplayClass29_0.<<StartAsync>b__0>d.MoveNext()
+2025-04-23 13:29:46.793 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnecting
+2025-04-23 13:29:46.795 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Disconnected
+2025-04-23 13:29:47.822 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 13:29:48.181 +02:00 [WRN] (MorningSignInBot.Worker) [Discord Gateway] Failed to resume previous session
+2025-04-23 13:29:48.384 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 13:29:48.890 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 13:29:49.211 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 13:29:49.214 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "18:30:10.7858325")
+2025-04-23 13:29:49.215 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 13:38:21.755 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 13:58:24.794 +02:00 [INF] () Starting host builder...
+2025-04-23 13:58:25.916 +02:00 [INF] () Applying database migrations...
+2025-04-23 13:58:26.676 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 13:58:26.678 +02:00 [INF] () Starting application host...
+2025-04-23 13:58:26.713 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 13:58:26.751 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 13:58:26.757 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 13:58:26.765 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 13:58:27.681 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 13:58:28.195 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 13:58:28.525 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 13:58:28.527 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "18:01:31.4723597")
+2025-04-23 13:58:28.530 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 13:58:41.321 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.

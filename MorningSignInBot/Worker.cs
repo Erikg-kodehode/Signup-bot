@@ -59,7 +59,6 @@ namespace MorningSignInBot
 
             try
             {
-                // Re-enabled module loading
                 await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
                 _logger.LogInformation("Interaction modules loaded.");
             }
@@ -93,11 +92,11 @@ namespace MorningSignInBot
         private async Task OnReadyAsync()
         {
             _logger.LogInformation("Discord client is ready. Registering commands...");
-            // Module loading is now done in StartAsync
 
             try
             {
-                ulong testGuildId = 0; // <-- SET YOUR TEST GUILD ID HERE! 0 for global registration
+                ulong testGuildId = 1364185117182005308; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
+
                 if (testGuildId != 0)
                 {
                     await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true);
@@ -138,7 +137,6 @@ namespace MorningSignInBot
                     }
                 }
 
-                // Execute commands, InteractionService now handles scope creation internally for command execution
                 var ctx = new SocketInteractionContext(_client, interaction);
                 await _interactionService.ExecuteCommandAsync(ctx, _services);
             }
@@ -210,11 +208,16 @@ namespace MorningSignInBot
             if (now > nextRunTime) { nextRunTime = nextRunTime.AddDays(1); }
             while (nextRunTime.DayOfWeek == DayOfWeek.Saturday || nextRunTime.DayOfWeek == DayOfWeek.Sunday)
             {
+                _logger.LogTrace("Skipping weekend day: {WeekendDay}", nextRunTime.DayOfWeek);
                 nextRunTime = nextRunTime.AddDays(1);
             }
 
             TimeSpan delay = nextRunTime - now;
-            if (delay < TimeSpan.Zero) { delay = TimeSpan.FromMinutes(1); _logger.LogWarning("Calculated negative delay, using fallback."); }
+            if (delay < TimeSpan.Zero)
+            {
+                delay = TimeSpan.FromMinutes(1);
+                _logger.LogWarning("Calculated negative delay after weekend check, using fallback.");
+            }
 
             _logger.LogInformation("Scheduling next sign-in message check for: {RunTime} (in {Delay})", nextRunTime, delay);
 
@@ -228,7 +231,7 @@ namespace MorningSignInBot
 
         private async Task TimerTickAsync()
         {
-            _logger.LogDebug("Timer triggered for daily message.");
+            _logger.LogDebug("Timer triggered for daily message check.");
             try
             {
                 if (_client.ConnectionState == ConnectionState.Connected)

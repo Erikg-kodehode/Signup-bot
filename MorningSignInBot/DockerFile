@@ -1,0 +1,36 @@
+# --- Build Stage ---
+# Use the .NET SDK image to build the application
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /source
+
+# Copy csproj and restore dependencies first for layer caching
+COPY *.csproj .
+RUN dotnet restore
+
+# Copy the rest of the application code
+COPY . .
+
+# Ensure EF Core tools are available if needed during build (usually not needed for runtime)
+# RUN dotnet tool install --global dotnet-ef --version 8.*
+
+# Run migrations during build (optional, usually better to run on startup like Program.cs does)
+# RUN dotnet ef database update
+
+# Publish the application to a specific folder, using Release configuration
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# --- Final Runtime Stage ---
+# Use the smaller .NET Runtime image for the final container
+FROM mcr.microsoft.com/dotnet/runtime:8.0
+WORKDIR /app
+
+# Copy the published output from the build stage
+COPY --from=build /app/publish .
+
+# Define the entry point for the container
+ENTRYPOINT ["dotnet", "MorningSignInBot.dll"]
+
+# Note: Data Volume and Environment Variables (like Bot Token)
+# should be configured when *running* the container (e.g., via docker-compose.yml)
+# The database file will be created inside the container at /app/Data/signins.db
+# (relative to WORKDIR) based on appsettings.json if the volume isn't mapped.

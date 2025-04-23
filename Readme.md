@@ -8,7 +8,7 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
 - Provides buttons for signing in ("Kontor" and "Hjemmekontor").
 - Stores sign-in records (User ID, Username, Timestamp (UTC), Type) in a local SQLite database.
 - Prevents duplicate sign-ins per day.
-- Provides admin commands to view sign-ins by date and trigger the message manually.
+- Provides admin commands to view sign-ins (optionally filtered by role/date), delete entries, list missing users by role, and trigger the message manually. Uses Autocomplete for date suggestions.
 - Skips posting on weekends (Saturday/Sunday).
 - Uses Norwegian language for user interactions.
 
@@ -39,7 +39,7 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
     ```bash
     dotnet run
     ```
-6.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`) and invite it to your server.
+6.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`) and invite it to your server. Ensure the bot has permission to view members if using the `/logg mangler` or `/logg vis [rolle]` commands (requires Server Members Intent enabled in Developer Portal).
 
 ## Configuration Files
 
@@ -49,26 +49,37 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
 
 ## Admin Commands
 
-These commands require the user to have the specific role configured in `Interactions/AdminCommands.cs` (replace the placeholder `123456789012345678` with your Role ID or use `[RequireRole("YourRoleName")]`).
+These commands require the user to have the specific role configured in `Interactions/AdminCommands.cs` (**replace the placeholder `123456789012345678` with your Role ID or use `[RequireRole("YourRoleName")]`**). Commands start with `/logg`.
 
-- `/innsjekk vis [dato]`
+- `/logg vis [rolle?] [dato?]`
 
-  - Viser hvem som logget seg inn på en gitt dato.
-  - `dato`: Valgfri. Dato i formatet `ÅÅÅÅ-MM-DD`. Hvis utelatt, vises dagens innsjekkinger.
-  - Eksempel: `/innsjekk vis dato:2025-04-23`
-  - Eksempel: `/innsjekk vis` (viser for i dag)
+  - Viser hvem som logget seg inn. Kan filtreres på rolle og/eller dato.
+  - `rolle`: Valgfri. Viser kun brukere med denne rollen. (Discord viser liste).
+  - `dato`: Valgfri. Dato i format `dd-MM-yyyy` eller `yyyy-MM-dd`. Tilbyr forslag ("I dag", "I går", formater). Hvis utelatt, vises dagens innsjekkinger.
+  - Eksempel (alle i dag): `/logg vis`
+  - Eksempel (rolle i dag): `/logg vis rolle:@Ansatt`
+  - Eksempel (alle på dato): `/logg vis dato:23-04-2025`
+  - Eksempel (rolle på dato): `/logg vis rolle:@Ansatt dato:23-04-2025`
 
-- `/innsjekk sendnå`
+- `/logg sendnå`
 
   - Tvinger botten til å sende dagens innsjekkingsmelding umiddelbart.
   - Nyttig for testing eller hvis den planlagte sendingen feilet.
 
-- `/innsjekk slett [bruker] [dato]`
+- `/logg slett [bruker] [dato]`
 
-  - **(Planlagt)** Sletter en spesifikk innsjekking.
+  - Sletter innsjekkingen for en spesifikk `bruker` på en gitt `dato`.
+  - `bruker`: Velg brukeren fra listen Discord viser.
+  - `dato`: Skriv inn datoen i format `dd-MM-yyyy` eller `yyyy-MM-dd`. Tilbyr forslag.
+  - Eksempel: `/logg slett bruker:@OlaNordmann dato:23-04-2025`
 
-- `/innsjekk mangler [rolle] [dato]`
-  - **(Planlagt)** Viser hvem med en gitt rolle som _ikke_ sjekket inn.
+- `/logg mangler [rolle] [dato?]`
+  - Viser hvilke brukere som har den spesifiserte `rolle` men som _ikke_ sjekket inn på den gitte `dato`.
+  - `rolle`: Velg rollen fra listen Discord viser.
+  - `dato`: Valgfri. Dato i format `dd-MM-yyyy` eller `yyyy-MM-dd`. Tilbyr forslag. Hvis utelatt, vises for dagens dato.
+  - Krever at botten har tilgang til serverens medlemsliste (Server Members Intent).
+  - Eksempel: `/logg mangler rolle:@Ansatt dato:23-04-2025`
+  - Eksempel: `/logg mangler rolle:@Alle` (viser for i dag)
 
 ## Database
 
