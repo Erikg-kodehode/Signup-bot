@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection; // Required for IServiceScopeFactory
 using Microsoft.Extensions.Logging;
 using MorningSignInBot.Data;
 using MorningSignInBot.Services;
@@ -12,23 +13,21 @@ using System.Threading.Tasks;
 
 namespace MorningSignInBot.Interactions
 {
-    // --- Permissions Changed Here ---
-    // Remove: [RequireUserPermission(GuildPermission.Administrator)]
+    // Remember to replace placeholder with your actual Role ID or use [RequireRole("YourRoleName")]
     [RequireRole(123456789012345678)] // <-- REPLACE with your actual Role ID or use [RequireRole("YourRoleName")]
-    // -------------------------------
     [Group("innsjekk", "Kommandoer for å sjekke innlogginger.")]
     public class AdminCommands : InteractionModuleBase<SocketInteractionContext>
     {
-        private readonly SignInContext _dbContext;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly INotificationService _notificationService;
         private readonly ILogger<AdminCommands> _logger;
 
         public AdminCommands(
-            SignInContext dbContext,
+            IServiceScopeFactory scopeFactory,
             INotificationService notificationService,
             ILogger<AdminCommands> logger)
         {
-            _dbContext = dbContext;
+            _scopeFactory = scopeFactory;
             _notificationService = notificationService;
             _logger = logger;
         }
@@ -43,7 +42,7 @@ namespace MorningSignInBot.Interactions
             if (string.IsNullOrWhiteSpace(datoString)) { targetDate = DateTime.Today; }
             else if (!DateTime.TryParseExact(datoString, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out targetDate))
             {
-                await FollowupAsync($"Ugyldig datoformat. Bruk formatet Plymouth-MM-DD.", ephemeral: true);
+                await FollowupAsync($"Ugyldig datoformat. Bruk formatet YYYY-MM-DD.", ephemeral: true); // Corrected example format
                 return;
             }
 
@@ -52,42 +51,47 @@ namespace MorningSignInBot.Interactions
 
             _logger.LogInformation("Admin {AdminUser} checking sign-ins for date: {TargetDate}", Context.User.Username, targetDate.ToString("yyyy-MM-dd"));
 
-            try
+            using (var scope = _scopeFactory.CreateScope())
             {
-                var signIns = await _dbContext.SignIns
-                    .Where(s => s.Timestamp >= startOfDayUtc && s.Timestamp <= endOfDayUtc)
-                    .OrderBy(s => s.Timestamp)
-                    .AsNoTracking()
-                    .ToListAsync();
+                var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
 
-                if (!signIns.Any())
+                try
                 {
-                    await FollowupAsync($"Ingen logget inn den {targetDate:dd. MMMM yyyy}.", ephemeral: false);
-                    return;
+                    var signIns = await dbContext.SignIns
+                        .Where(s => s.Timestamp >= startOfDayUtc && s.Timestamp <= endOfDayUtc)
+                        .OrderBy(s => s.Timestamp)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    if (!signIns.Any())
+                    {
+                        await FollowupAsync($"Ingen logget inn den {targetDate:dd. MMMM yyyy}.", ephemeral: false); // Corrected date format
+                        return;
+                    }
+
+                    var embedBuilder = new EmbedBuilder()
+                        .WithTitle($"Innsjekkinger for {targetDate:dd. MMMM yyyy}") // Corrected date format
+                        .WithColor(Color.Blue)
+                        .WithTimestamp(DateTimeOffset.Now);
+
+                    var description = new StringBuilder();
+                    foreach (var entry in signIns)
+                    {
+                        DateTime localTime = entry.Timestamp.ToLocalTime();
+                        string timeString = localTime.ToString("HH:mm:ss");
+                        description.AppendLine($"**{entry.Username}** ({entry.SignInType}) - Kl. {timeString}");
+                    }
+
+                    if (description.Length > 4096) { description.Length = 4090; description.Append("..."); }
+
+                    embedBuilder.WithDescription(description.ToString());
+                    await FollowupAsync(embed: embedBuilder.Build());
                 }
-
-                var embedBuilder = new EmbedBuilder()
-                    .WithTitle($"Innsjekkinger for {targetDate:dd. MMMM yyyy}")
-                    .WithColor(Color.Blue)
-                    .WithTimestamp(DateTimeOffset.Now);
-
-                var description = new StringBuilder();
-                foreach (var entry in signIns)
+                catch (Exception ex)
                 {
-                    DateTime localTime = entry.Timestamp.ToLocalTime();
-                    string timeString = localTime.ToString("HH:mm:ss");
-                    description.AppendLine($"**{entry.Username}** ({entry.SignInType}) - Kl. {timeString}");
+                    _logger.LogError(ex, "Error querying sign-ins for date {TargetDate}", targetDate);
+                    await FollowupAsync("En feil oppstod under henting av data.", ephemeral: true);
                 }
-
-                if (description.Length > 4096) { description.Length = 4090; description.Append("..."); }
-
-                embedBuilder.WithDescription(description.ToString());
-                await FollowupAsync(embed: embedBuilder.Build());
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error querying sign-ins for date {TargetDate}", targetDate);
-                await FollowupAsync("En feil oppstod under henting av data.", ephemeral: true);
             }
         }
 

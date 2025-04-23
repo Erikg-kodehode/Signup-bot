@@ -57,13 +57,13 @@ namespace MorningSignInBot
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
 
-            // try // Temporarily commented out for diagnostics
-            // {
-            //     // Temporarily commented out to diagnose DI scope error
-            //     // await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-            _logger.LogInformation("Interaction module loading skipped in StartAsync for diagnostics.");
-            // }
-            // catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules."); }
+            try
+            {
+                // Re-enabled module loading
+                await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+                _logger.LogInformation("Interaction modules loaded.");
+            }
+            catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules."); }
 
             await _client.LoginAsync(TokenType.Bot, _settings.BotToken);
             await _client.StartAsync();
@@ -92,19 +92,9 @@ namespace MorningSignInBot
 
         private async Task OnReadyAsync()
         {
-            _logger.LogInformation("Discord client is ready.");
+            _logger.LogInformation("Discord client is ready. Registering commands...");
+            // Module loading is now done in StartAsync
 
-            // Temporarily commented out module loading for diagnostics
-            // try
-            // {
-            //     await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-            //     _logger.LogInformation("Interaction modules loaded from OnReadyAsync.");
-            // }
-            // catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules from OnReadyAsync."); }
-
-
-            // Command Registration (will likely fail if modules aren't loaded, but keep for structure)
-            _logger.LogInformation("Attempting to register commands (may fail if modules not loaded)...");
             try
             {
                 ulong testGuildId = 0; // <-- SET YOUR TEST GUILD ID HERE! 0 for global registration
@@ -115,22 +105,21 @@ namespace MorningSignInBot
                 }
                 else
                 {
-                    _logger.LogWarning("Test Guild ID not set. Attempting global command registration.");
+                    _logger.LogWarning("Test Guild ID not set. Attempting global command registration (may take up to an hour).");
                     await _interactionService.RegisterCommandsGloballyAsync(true);
                     _logger.LogInformation("Attempting global command registration.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to register interaction commands (expected if modules not loaded).");
+                _logger.LogError(ex, "Failed to register interaction commands.");
             }
 
-            ScheduleNextSignInMessage();
+            ScheduleNextSignInMessage(); // Initial schedule
         }
 
         private async Task HandleInteractionAsync(SocketInteraction interaction)
         {
-            // Note: Command execution will fail if modules aren't loaded
             try
             {
                 if (interaction is SocketMessageComponent componentInteraction)
@@ -149,18 +138,18 @@ namespace MorningSignInBot
                     }
                 }
 
-                // This part will likely throw exceptions if AddModulesAsync was commented out
+                // Execute commands, InteractionService now handles scope creation internally for command execution
                 var ctx = new SocketInteractionContext(_client, interaction);
                 await _interactionService.ExecuteCommandAsync(ctx, _services);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling interaction (may be due to modules not loaded).");
+                _logger.LogError(ex, "Error handling interaction.");
                 if (interaction.Type == InteractionType.ApplicationCommand || interaction.Type == InteractionType.MessageComponent)
                 {
                     try
                     {
-                        var errorMsg = "En feil oppstod (muligens kommandoer ikke lastet).";
+                        var errorMsg = "En feil oppstod.";
                         if (!interaction.HasResponded) await interaction.RespondAsync(errorMsg, ephemeral: true);
                         else await interaction.FollowupAsync(errorMsg, ephemeral: true);
                     }
@@ -250,7 +239,6 @@ namespace MorningSignInBot
                 {
                     _logger.LogWarning("Timer ticked but client was not connected. Skipping send.");
                 }
-
             }
             catch (Exception ex) { _logger.LogError(ex, "Error executing scheduled task via NotificationService."); }
             finally { ScheduleNextSignInMessage(); }

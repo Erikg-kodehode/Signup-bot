@@ -40,3 +40,4 @@ System.InvalidOperationException: Cannot resolve scoped service 'MorningSignInBo
 2025-04-23 10:34:54.573 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
 2025-04-23 10:34:54.575 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "21:25:05.4251077")
 2025-04-23 10:34:54.581 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 10:54:10.443 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
