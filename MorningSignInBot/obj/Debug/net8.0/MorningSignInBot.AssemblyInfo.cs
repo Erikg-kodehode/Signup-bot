@@ -10,7 +10,7 @@
 using System;
 using System.Reflection;
 
-[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("dotnet-MorningSignInBot-94504392-70ca-4f3d-a128-7329160cbc31")]
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("dotnet-MorningSignInBot-YOUR_UNIQUE_GUID")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("MorningSignInBot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]

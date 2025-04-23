@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\morningSigninBot\\MorningSignInBot.csproj": {}
+    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj": {}
   },
   "projects": {
-    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\morningSigninBot\\MorningSignInBot.csproj": {
+    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\morningSigninBot\\MorningSignInBot.csproj",
+        "projectUniqueName": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
         "projectName": "MorningSignInBot",
-        "projectPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\morningSigninBot\\MorningSignInBot.csproj",
+        "projectPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
         "packagesPath": "C:\\Users\\erikg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\morningSigninBot\\obj\\",
+        "outputPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\erikg\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -41,38 +41,46 @@
         "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
-            "Discord.Net": {
+            "Discord.Net.Commands": {
               "target": "Package",
-              "version": "[3.17.2, )"
+              "version": "[3.15.0, )"
+            },
+            "Discord.Net.Core": {
+              "target": "Package",
+              "version": "[3.15.0, )"
             },
             "Discord.Net.Interactions": {
               "target": "Package",
-              "version": "[3.17.2, )"
+              "version": "[3.15.0, )"
+            },
+            "Discord.Net.WebSocket": {
+              "target": "Package",
+              "version": "[3.15.0, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[8.0.4, )"
             },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
-              "version": "[9.0.4, )"
-            },
-            "Microsoft.Extensions.Configuration.Binder": {
-              "target": "Package",
-              "version": "[9.0.4, )"
-            },
-            "Microsoft.Extensions.Configuration.Json": {
-              "target": "Package",
-              "version": "[9.0.4, )"
+              "version": "[8.0.4, )"
             },
             "Microsoft.Extensions.Hosting": {
               "target": "Package",
-              "version": "[9.0.1, )"
+              "version": "[8.0.0, )"
+            },
+            "Serilog.AspNetCore": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Serilog.Sinks.File": {
+              "target": "Package",
+              "version": "[5.0.0, )"
             }
           },
           "imports": [

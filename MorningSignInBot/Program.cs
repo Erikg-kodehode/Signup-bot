@@ -1,67 +1,102 @@
 using Discord;
-using Discord.Interactions; // Required for InteractionService
+using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore; // Required for EF Core
-using Microsoft.Extensions.DependencyInjection; // Required for AddDbContext, AddSingleton
-using MorningSignInBot;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging; // Required for Log.Information etc. usage below
+using MorningSignInBot.Configuration; // Use correct namespace
+using MorningSignInBot.Data;         // Use correct namespace
+using MorningSignInBot.Services;    // Use correct namespace
+using Serilog;
+using System;
+using System.Threading.Tasks; // Required for Task
 
-// --- Dependency Injection Setup ---
-IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((hostContext, services) =>
-    {
-        // Add configuration options
-        services.Configure<DiscordSettings>(hostContext.Configuration.GetSection("Discord"));
-
-        // Add DbContext factory for SQLite
-        // Use AddDbContextPool for potential performance gains if needed, AddDbContext is fine for now.
-        services.AddDbContext<SignInContext>(); // EF Core context
-
-        // Discord Client Configuration
-        var discordConfig = new DiscordSocketConfig
-        {
-            GatewayIntents = GatewayIntents.Guilds
-                           | GatewayIntents.GuildMessages // Needed for message context
-                           | GatewayIntents.GuildMembers // Needed for user info on interaction
-                           | GatewayIntents.MessageContent // Often needed with interactions/commands
-        };
-        services.AddSingleton(discordConfig);
-        services.AddSingleton<DiscordSocketClient>();
-
-        // Add Interaction Service
-        services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
-
-        // Add the main worker service (which now includes interaction handler setup)
-        services.AddHostedService<Worker>();
-
-        // Add our command module(s)
-        // services.AddSingleton<AdminCommands>(); // Let InteractionService handle instantiation
-
-    })
-    .Build();
-
-
-// --- Ensure Database is Created ---
-// Get the scope factory
-var scopeFactory = host.Services.GetRequiredService<IServiceScopeFactory>();
-// Create a scope to resolve services
-using (var scope = scopeFactory.CreateScope())
+namespace MorningSignInBot
 {
-    try
+    public class Program
     {
-        // Get the DbContext
-        var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
-        // Apply pending migrations automatically. Creates DB if it doesn't exist.
-        await dbContext.Database.MigrateAsync();
-        Console.WriteLine("Database migrations applied successfully or database is up-to-date.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"An error occurred while migrating the database: {ex.Message}");
-        // Decide if the application should exit if the DB fails to initialize
-        return; // Exit if DB migration fails
+        public static async Task Main(string[] args)
+        {
+            // Configure Serilog for bootstrap logging first
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(Host.CreateDefaultBuilder(args).Build().Configuration)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
+
+            try
+            {
+                Log.Information("Starting host builder...");
+
+                IHost host = Host.CreateDefaultBuilder(args)
+                    .UseSerilog((context, services, configuration) => configuration
+                        .ReadFrom.Configuration(context.Configuration)
+                        .ReadFrom.Services(services)
+                        .Enrich.FromLogContext())
+                    .ConfigureServices((hostContext, services) =>
+                    {
+                        // Configurations
+                        services.Configure<DiscordSettings>(hostContext.Configuration.GetSection("Discord"));
+                        services.Configure<DatabaseSettings>(hostContext.Configuration.GetSection("Database"));
+
+                        // Database
+                        services.AddDbContext<SignInContext>();
+
+                        // Discord Client
+                        var discordConfig = new DiscordSocketConfig
+                        {
+                            GatewayIntents = GatewayIntents.Guilds
+                                       | GatewayIntents.GuildMessages
+                                       | GatewayIntents.GuildMembers
+                                       | GatewayIntents.MessageContent, // Ensure necessary intents
+                            LogLevel = LogSeverity.Info // Let Serilog handle filtering
+                        };
+                        services.AddSingleton(discordConfig);
+                        services.AddSingleton<DiscordSocketClient>();
+
+                        // Interaction Service
+                        services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
+
+                        // Custom Services
+                        services.AddSingleton<INotificationService, NotificationService>();
+
+                        // Background Worker
+                        services.AddHostedService<Worker>();
+                    })
+                    .Build();
+
+                // Apply Migrations
+                Log.Information("Applying database migrations...");
+                var scopeFactory = host.Services.GetRequiredService<IServiceScopeFactory>();
+                using (var scope = scopeFactory.CreateScope())
+                {
+                    try
+                    {
+                        var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
+                        await dbContext.Database.MigrateAsync();
+                        Log.Information("Database migrations applied or database up-to-date.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Fatal(ex, "Database migration failed.");
+                        return; // Exit if migration fails
+                    }
+                }
+
+                // Run Host
+                Log.Information("Starting application host...");
+                await host.RunAsync();
+
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application host terminated unexpectedly.");
+            }
+            finally
+            {
+                Log.CloseAndFlush(); // Ensure logs are flushed on exit
+            }
+        }
     }
 }
-
-
-// --- Run the Application ---
-await host.RunAsync();
