@@ -1,0 +1,6 @@
+C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\obj\Debug\net8.0\MorningSignInBot.csproj.AssemblyReference.cache
+C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\obj\Debug\net8.0\MorningSignInBot.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\obj\Debug\net8.0\MorningSignInBot.AssemblyInfoInputs.cache
+C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\obj\Debug\net8.0\MorningSignInBot.AssemblyInfo.cs
+C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\obj\Debug\net8.0\MorningSignInBot.csproj.CoreCompileInputs.cache
+C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBot\obj\Debug\net8.0\MorningSignInBot.sourcelink.json
