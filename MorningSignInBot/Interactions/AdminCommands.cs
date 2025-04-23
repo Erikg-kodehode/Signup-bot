@@ -12,7 +12,10 @@ using System.Threading.Tasks;
 
 namespace MorningSignInBot.Interactions
 {
-    [RequireUserPermission(GuildPermission.Administrator)]
+    // --- Permissions Changed Here ---
+    // Remove: [RequireUserPermission(GuildPermission.Administrator)]
+    [RequireRole(123456789012345678)] // <-- REPLACE with your actual Role ID or use [RequireRole("YourRoleName")]
+    // -------------------------------
     [Group("innsjekk", "Kommandoer for å sjekke innlogginger.")]
     public class AdminCommands : InteractionModuleBase<SocketInteractionContext>
     {
@@ -40,7 +43,7 @@ namespace MorningSignInBot.Interactions
             if (string.IsNullOrWhiteSpace(datoString)) { targetDate = DateTime.Today; }
             else if (!DateTime.TryParseExact(datoString, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out targetDate))
             {
-                await FollowupAsync($"Ugyldig datoformat. Bruk formatet YYYY-MM-DD.", ephemeral: true);
+                await FollowupAsync($"Ugyldig datoformat. Bruk formatet Plymouth-MM-DD.", ephemeral: true);
                 return;
             }
 
