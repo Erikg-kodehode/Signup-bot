@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MorningSignInBot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+146a5039e8c980a68e25f2a82a6a74dc7f6822b0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b05aa350ab57414f0e2a5daf3544c3210d9e0de")]
 [assembly: System.Reflection.AssemblyProductAttribute("MorningSignInBot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MorningSignInBot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

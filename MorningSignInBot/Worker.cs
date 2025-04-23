@@ -96,7 +96,6 @@ namespace MorningSignInBot
             try
             {
                 ulong testGuildId = 1364185117182005308; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
-
                 if (testGuildId != 0)
                 {
                     await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true);
@@ -114,7 +113,7 @@ namespace MorningSignInBot
                 _logger.LogError(ex, "Failed to register interaction commands.");
             }
 
-            ScheduleNextSignInMessage(); // Initial schedule
+            ScheduleNextSignInMessage();
         }
 
         private async Task HandleInteractionAsync(SocketInteraction interaction)

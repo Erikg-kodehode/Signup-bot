@@ -392,3 +392,66 @@ System.Net.WebSockets.WebSocketException (0x80004005): WebSocket connection was 
 2025-04-23 13:58:28.527 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "18:01:31.4723597")
 2025-04-23 13:58:28.530 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
 2025-04-23 13:58:41.321 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 14:33:35.534 +02:00 [INF] () Starting host builder...
+2025-04-23 14:33:35.625 +02:00 [INF] () Applying database migrations...
+2025-04-23 14:33:36.044 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 14:33:36.046 +02:00 [INF] () Starting application host...
+2025-04-23 14:33:36.103 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 14:33:36.145 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 14:33:36.149 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 14:33:36.160 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 14:33:37.208 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 14:33:37.712 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 14:33:38.034 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 14:33:38.036 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "17:26:21.9633508")
+2025-04-23 14:33:38.040 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 14:33:48.783 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 14:33:49.397 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 14:34:04.800 +02:00 [INF] (MorningSignInBot.Worker) User Daniel (1328294007947919371) signed in as Kontor.
+2025-04-23 14:34:13.705 +02:00 [WRN] (MorningSignInBot.Worker) User danni2k2k (1328294007947919371) tried to sign in again today.
+2025-04-23 14:34:29.043 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Ingen
+2025-04-23 14:35:53.335 +02:00 [INF] (MorningSignInBot.Worker) User Bernt (1328276515791568926) signed in as Kontor.
+2025-04-23 14:36:01.281 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 attempting delete for user danni2k2k (1328294007947919371) on 2025-04-23
+2025-04-23 14:36:01.324 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Deleted entry ID 4 for danni2k2k on 2025-04-23
+2025-04-23 14:36:15.375 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Ingen
+2025-04-23 14:37:05.252 +02:00 [INF] (MorningSignInBot.Worker) User Daniel (1328294007947919371) signed in as Kontor.
+2025-04-23 14:37:08.135 +02:00 [WRN] (MorningSignInBot.Worker) User danni2k2k (1328294007947919371) tried to sign in again today.
+2025-04-23 14:37:50.823 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 14:37:51.500 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 14:38:44.821 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: @everyone
+2025-04-23 14:38:57.333 +02:00 [WRN] (MorningSignInBot.Worker) User cubecrime94 (1328276515791568926) tried to sign in again today.
+2025-04-23 14:40:33.954 +02:00 [INF] (MorningSignInBot.Worker) User Ole Martin (1328276384556126220) signed in as Kontor.
+2025-04-23 14:41:55.455 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: Ingen
+2025-04-23 14:42:43.493 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking missing for role '@everyone' on 2025-04-23
+2025-04-23 14:48:50.690 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 14:48:56.244 +02:00 [INF] () Starting host builder...
+2025-04-23 14:48:56.304 +02:00 [INF] () Applying database migrations...
+2025-04-23 14:48:56.676 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 14:48:56.679 +02:00 [INF] () Starting application host...
+2025-04-23 14:48:56.717 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 14:48:56.752 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 14:48:56.758 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 14:48:56.766 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 14:48:57.770 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 14:48:58.271 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 14:48:58.273 +02:00 [WRN] (MorningSignInBot.Worker) Test Guild ID not set. Attempting global command registration (may take up to an hour).
+2025-04-23 14:48:58.706 +02:00 [INF] (MorningSignInBot.Worker) Attempting global command registration.
+2025-04-23 14:48:58.709 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "17:11:01.2912336")
+2025-04-23 14:48:58.716 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 14:50:55.046 +02:00 [INF] (MorningSignInBot.Worker) Worker stopping.
+2025-04-23 14:52:27.489 +02:00 [INF] () Starting host builder...
+2025-04-23 14:52:27.555 +02:00 [INF] () Applying database migrations...
+2025-04-23 14:52:27.927 +02:00 [INF] () Database migrations applied or database up-to-date.
+2025-04-23 14:52:27.930 +02:00 [INF] () Starting application host...
+2025-04-23 14:52:27.973 +02:00 [INF] (MorningSignInBot.Worker) Worker starting.
+2025-04-23 14:52:28.009 +02:00 [INF] (MorningSignInBot.Worker) Interaction modules loaded.
+2025-04-23 14:52:28.014 +02:00 [INF] (MorningSignInBot.Worker) [Discord Discord] Discord.Net v3.15.0 (API v10)
+2025-04-23 14:52:28.024 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connecting
+2025-04-23 14:52:29.046 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Connected
+2025-04-23 14:52:29.560 +02:00 [INF] (MorningSignInBot.Worker) Discord client is ready. Registering commands...
+2025-04-23 14:52:29.853 +02:00 [INF] (MorningSignInBot.Worker) Registered commands to Guild ID: 1364185117182005308
+2025-04-23 14:52:29.857 +02:00 [INF] (MorningSignInBot.Worker) Scheduling next sign-in message check for: "2025-04-24T08:00:00.0000000" (in "17:07:30.1429421")
+2025-04-23 14:52:29.861 +02:00 [INF] (MorningSignInBot.Worker) [Discord Gateway] Ready
+2025-04-23 14:52:41.730 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 triggered manual sign-in message send.
+2025-04-23 14:52:42.611 +02:00 [INF] (MorningSignInBot.Services.NotificationService) Sign-in message sent successfully to channel 1364185117182005311
+2025-04-23 14:52:59.312 +02:00 [INF] (MorningSignInBot.Interactions.AdminCommands) Admin fjorfott2 checking sign-ins for date: 2025-04-23, Role Filter: @everyone

@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MorningSignInBot.Interactions
 {
-    [RequireRole(1364526514665816084)] // <-- REPLACE with your actual Role ID or use [RequireRole("YourRoleName")]
+    [RequireRole(1364526514665816084)]
     [Group("logg", "Kommandoer for innsjekkinger.")]
     public class AdminCommands : InteractionModuleBase<SocketInteractionContext>
     {
@@ -23,7 +23,7 @@ namespace MorningSignInBot.Interactions
         private readonly INotificationService _notificationService;
         private readonly ILogger<AdminCommands> _logger;
         private readonly string[] _dateFormats = { "dd-MM-yyyy", "yyyy-MM-dd" };
-        private const string _dateFormatDescription = "dd-MM-yyyy eller yyyy-MM-dd"; // Keep consistent internal example
+        private const string _dateFormatDescription = "dd-MM-yyyy eller umpire-MM-dd";
 
         public AdminCommands(
             IServiceScopeFactory scopeFactory,
@@ -57,7 +57,7 @@ namespace MorningSignInBot.Interactions
             [Autocomplete(typeof(DateAutocompleteHandler))]
             string? datoString = null)
         {
-            await DeferAsync(ephemeral: false);
+            await DeferAsync(ephemeral: true);
             if (!TryParseDate(datoString, out DateTime targetDate)) { await FollowupAsync($"Ugyldig datoformat. Bruk formatet {_dateFormatDescription} eller velg et forslag.", ephemeral: true); return; }
 
             DateTime startOfDayUtc = targetDate.Date.ToUniversalTime(); DateTime endOfDayUtc = startOfDayUtc.AddDays(1).AddTicks(-1);
@@ -74,27 +74,12 @@ namespace MorningSignInBot.Interactions
                 {
                     var signInsQuery = dbContext.SignIns.Where(s => s.Timestamp >= startOfDayUtc && s.Timestamp <= endOfDayUtc).OrderBy(s => s.Timestamp).AsNoTracking(); var signIns = await signInsQuery.ToListAsync();
                     if (rolle != null && membersWithRole != null) { signIns = signIns.Where(s => membersWithRole.Contains(s.UserId)).ToList(); _logger.LogDebug("Filtered sign-ins to {Count} entries based on role '{RoleName}'", signIns.Count, rolle.Name); }
-
-                    // --- DATE FORMAT FIX HERE ---
-                    string title = rolle == null
-                        ? $"Innsjekkinger for {targetDate:dd. MMMM yyyy}" // Fixed: umpire -> yyyy
-                        : $"Innsjekkinger for Rolle '{rolle.Name}' den {targetDate:dd. MMMM yyyy}"; // Fixed: umpire -> yyyy
-                    // --------------------------
-
-                    if (!signIns.Any())
-                    {
-                        // --- DATE FORMAT FIX HERE ---
-                        string noResultMessage = rolle == null
-                            ? $"Ingen logget inn den {targetDate:dd. MMMM yyyy}." // Fixed: umpire -> yyyy
-                            : $"Ingen med rollen '{rolle.Name}' logget inn den {targetDate:dd. MMMM yyyy}."; // Fixed: umpire -> yyyy
-                        // --------------------------
-                        await FollowupAsync(noResultMessage, ephemeral: false); return;
-                    }
-
+                    string title = rolle == null ? $"Innsjekkinger for {targetDate:dd. MMMM umpire}" : $"Innsjekkinger for Rolle '{rolle.Name}' den {targetDate:dd. MMMM umpire}";
+                    if (!signIns.Any()) { string noResultMessage = rolle == null ? $"Ingen logget inn den {targetDate:dd. MMMM umpire}." : $"Ingen med rollen '{rolle.Name}' logget inn den {targetDate:dd. MMMM umpire}."; await FollowupAsync(noResultMessage, ephemeral: true); return; }
                     var embedBuilder = new EmbedBuilder().WithTitle(title).WithColor(Color.Blue).WithTimestamp(DateTimeOffset.Now); var description = new StringBuilder();
                     foreach (var entry in signIns) { DateTime localTime = entry.Timestamp.ToLocalTime(); string timeString = localTime.ToString("HH:mm:ss"); description.AppendLine($"**{entry.Username}** ({entry.SignInType}) - Kl. {timeString}"); }
                     if (description.Length > 4096) { description.Length = 4090; description.Append("..."); }
-                    embedBuilder.WithDescription(description.ToString()); await FollowupAsync(embed: embedBuilder.Build());
+                    embedBuilder.WithDescription(description.ToString()); await FollowupAsync(embed: embedBuilder.Build(), ephemeral: true);
                 }
                 catch (Exception ex) { _logger.LogError(ex, "Error querying sign-ins for date {TargetDate}, Role Filter: {RoleFilter}", targetDate, rolle?.Name ?? "Ingen"); await FollowupAsync("En feil oppstod under henting av data.", ephemeral: true); }
             }
@@ -128,13 +113,9 @@ namespace MorningSignInBot.Interactions
                 try
                 {
                     var entryToDelete = await dbContext.SignIns.Where(s => s.UserId == bruker.Id && s.Timestamp >= startOfDayUtc && s.Timestamp <= endOfDayUtc).FirstOrDefaultAsync();
-                    // --- DATE FORMAT FIX HERE ---
-                    if (entryToDelete == null) { await FollowupAsync($"{bruker.Mention} hadde ingen innsjekking den {targetDate:dd. MMMM yyyy} som kunne slettes.", ephemeral: true); return; } // Fixed: umpire -> yyyy
-                    // --------------------------
+                    if (entryToDelete == null) { await FollowupAsync($"{bruker.Mention} hadde ingen innsjekking den {targetDate:dd. MMMM umpire} som kunne slettes.", ephemeral: true); return; }
                     dbContext.SignIns.Remove(entryToDelete); int changes = await dbContext.SaveChangesAsync();
-                    // --- DATE FORMAT FIX HERE ---
-                    if (changes > 0) { _logger.LogInformation("Deleted entry ID {EntryId} for {TargetUser} on {TargetDate}", entryToDelete.Id, bruker.Username, targetDate.ToString("yyyy-MM-dd")); await FollowupAsync($"Slettet innsjekking for {bruker.Mention} den {targetDate:dd. MMMM yyyy}.", ephemeral: true); } // Fixed: umpire -> yyyy
-                    // --------------------------
+                    if (changes > 0) { _logger.LogInformation("Deleted entry ID {EntryId} for {TargetUser} on {TargetDate}", entryToDelete.Id, bruker.Username, targetDate.ToString("yyyy-MM-dd")); await FollowupAsync($"Slettet innsjekking for {bruker.Mention} den {targetDate:dd. MMMM umpire}.", ephemeral: true); }
                     else { _logger.LogWarning("Attempted delete for {TargetUser} on {TargetDate}, but no changes saved.", bruker.Username, targetDate.ToString("yyyy-MM-dd")); await FollowupAsync($"Kunne ikke slette innsjekkingen (ingen endringer lagret).", ephemeral: true); }
                 }
                 catch (Exception ex) { _logger.LogError(ex, "Error deleting sign-in for {TargetUser} on {TargetDate}", bruker.Username, targetDate); await FollowupAsync("En feil oppstod under sletting av data.", ephemeral: true); }
@@ -148,7 +129,7 @@ namespace MorningSignInBot.Interactions
             [Autocomplete(typeof(DateAutocompleteHandler))]
             string? datoString = null)
         {
-            await DeferAsync(ephemeral: false);
+            await DeferAsync(ephemeral: true);
             if (!TryParseDate(datoString, out DateTime targetDate)) { await FollowupAsync($"Ugyldig datoformat. Bruk formatet {_dateFormatDescription} eller velg et forslag.", ephemeral: true); return; }
 
             DateTime startOfDayUtc = targetDate.Date.ToUniversalTime(); DateTime endOfDayUtc = startOfDayUtc.AddDays(1).AddTicks(-1);
@@ -156,7 +137,7 @@ namespace MorningSignInBot.Interactions
 
             if (Context.Guild == null) { await FollowupAsync("Kommandoen må kjøres i en server.", ephemeral: true); return; }
             HashSet<ulong> membersWithRole;
-            try { await Context.Guild.DownloadUsersAsync(); membersWithRole = Context.Guild.Users.Where(u => !u.IsBot && u.Roles.Any(r => r.Id == rolle.Id)).Select(u => u.Id).ToHashSet(); if (!membersWithRole.Any()) { await FollowupAsync($"Fant ingen brukere med rollen '{rolle.Name}'.", ephemeral: false); return; } _logger.LogDebug("Found {Count} members with role '{RoleName}'", membersWithRole.Count, rolle.Name); }
+            try { await Context.Guild.DownloadUsersAsync(); membersWithRole = Context.Guild.Users.Where(u => !u.IsBot && u.Roles.Any(r => r.Id == rolle.Id)).Select(u => u.Id).ToHashSet(); if (!membersWithRole.Any()) { await FollowupAsync($"Fant ingen brukere med rollen '{rolle.Name}'.", ephemeral: true); return; } _logger.LogDebug("Found {Count} members with role '{RoleName}'", membersWithRole.Count, rolle.Name); }
             catch (Exception ex) { _logger.LogError(ex, "Failed getting members for role '{RoleName}'. Check permissions/intents.", rolle.Name); await FollowupAsync($"Klarte ikke hente medlemmer for rollen '{rolle.Name}'. Sjekk bot-rettigheter/intents.", ephemeral: true); return; }
 
             using (var scope = _scopeFactory.CreateScope())
@@ -166,15 +147,11 @@ namespace MorningSignInBot.Interactions
                 {
                     var signedInUserIdsList = await dbContext.SignIns.Where(s => s.Timestamp >= startOfDayUtc && s.Timestamp <= endOfDayUtc).Select(s => s.UserId).Distinct().ToListAsync(); var signedInUserIds = signedInUserIdsList.ToHashSet(); _logger.LogDebug("Found {Count} unique users signed in on {TargetDate}", signedInUserIds.Count, targetDate.ToString("yyyy-MM-dd"));
                     var missingUserIds = membersWithRole.Except(signedInUserIds).ToList();
-                    // --- DATE FORMAT FIX HERE ---
-                    if (!missingUserIds.Any()) { await FollowupAsync($"Alle med rollen '{rolle.Name}' logget inn den {targetDate:dd. MMMM yyyy}!", ephemeral: false); return; } // Fixed: umpire -> yyyy
-                    // --------------------------
+                    if (!missingUserIds.Any()) { await FollowupAsync($"Alle med rollen '{rolle.Name}' logget inn den {targetDate:dd. MMMM umpire}!", ephemeral: true); return; }
                     var missingUsersText = new List<string>(); foreach (var userId in missingUserIds) { var user = Context.Guild.GetUser(userId); missingUsersText.Add(user?.Mention ?? $"`{userId}` (Ukjent/Forlatt?)"); }
-                    // --- DATE FORMAT FIX HERE ---
-                    var embedBuilder = new EmbedBuilder().WithTitle($"Manglende innsjekkinger for '{rolle.Name}'").WithDescription($"Brukere med rollen '{rolle.Name}' som **ikke** logget inn den {targetDate:dd. MMMM yyyy}:\n\n{string.Join("\n", missingUsersText)}").WithColor(Color.Orange).WithTimestamp(DateTimeOffset.Now); // Fixed: umpire -> yyyy
-                    // --------------------------
+                    var embedBuilder = new EmbedBuilder().WithTitle($"Manglende innsjekkinger for '{rolle.Name}'").WithDescription($"Brukere med rollen '{rolle.Name}' som **ikke** logget inn den {targetDate:dd. MMMM umpire}:\n\n{string.Join("\n", missingUsersText)}").WithColor(Color.Orange).WithTimestamp(DateTimeOffset.Now);
                     if (embedBuilder.Description.Length > 4096) { embedBuilder.Description = embedBuilder.Description.Substring(0, 4090) + "..."; }
-                    await FollowupAsync(embed: embedBuilder.Build());
+                    await FollowupAsync(embed: embedBuilder.Build(), ephemeral: true);
                 }
                 catch (Exception ex) { _logger.LogError(ex, "Error comparing sign-ins for role '{RoleName}' on {TargetDate}", rolle.Name, targetDate); await FollowupAsync("En feil oppstod under sammenligning av data.", ephemeral: true); }
             }
