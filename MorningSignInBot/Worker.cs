@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using MorningSignInBot.Configuration;
 using MorningSignInBot.Data;
 using MorningSignInBot.Services;
-using Nager.Date; // <-- Added using for Nager.Date
+using Nager.Date; // <-- Added this using statement
 using System;
 using System.Linq;
 using System.Reflection;
@@ -159,7 +159,6 @@ namespace MorningSignInBot
 
             if (now > nextRunTime) { nextRunTime = nextRunTime.AddDays(1); }
 
-            // --- MODIFIED: Loop until not weekend AND not public holiday ---
             while (nextRunTime.DayOfWeek == DayOfWeek.Saturday ||
                    nextRunTime.DayOfWeek == DayOfWeek.Sunday ||
                    DateSystem.IsPublicHoliday(nextRunTime, CountryCode.NO)) // Use Nager.Date check for Norway
@@ -167,7 +166,6 @@ namespace MorningSignInBot
                 _logger.LogTrace("Skipping weekend or public holiday: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
                 nextRunTime = nextRunTime.AddDays(1);
             }
-            // -------------------------------------------------------------
 
             TimeSpan delay = nextRunTime - now;
             if (delay < TimeSpan.Zero)
@@ -191,7 +189,6 @@ namespace MorningSignInBot
             _logger.LogDebug("Timer triggered for daily message check.");
             try
             {
-                // NotificationService also has a weekend check, which is fine as double safety
                 if (_client.ConnectionState == ConnectionState.Connected)
                 {
                     await _notificationService.SendDailySignInAsync();
@@ -202,7 +199,7 @@ namespace MorningSignInBot
                 }
             }
             catch (Exception ex) { _logger.LogError(ex, "Error executing scheduled task via NotificationService."); }
-            finally { ScheduleNextSignInMessage(); } // Always reschedule for the next valid day
+            finally { ScheduleNextSignInMessage(); }
         }
 
         private Task LogAsync(LogMessage log)
