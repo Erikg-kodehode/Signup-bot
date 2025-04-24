@@ -14,6 +14,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Nager.Date" Version="2.8.3" />
      <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" /> <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 

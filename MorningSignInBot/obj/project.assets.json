@@ -1147,6 +1147,35 @@
           "lib/netstandard2.0/Mono.TextTemplating.dll": {}
         }
       },
+      "Nager.Date/2.8.3": {
+        "type": "package",
+        "dependencies": {
+          "Nager.LicenseSystem": "1.1.0"
+        },
+        "compile": {
+          "lib/net8.0/Nager.Date.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Nager.Date.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Nager.LicenseSystem/1.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Nager.LicenseSystem.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Nager.LicenseSystem.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.3": {
         "type": "package",
         "compile": {
@@ -3532,6 +3561,50 @@
         "mono.texttemplating.nuspec"
       ]
     },
+    "Nager.Date/2.8.3": {
+      "sha512": "dgdLfwY8+25vAporum5792xNZrYTAhnd7zvCNqCMIdAfDotvsRmXPQZEcZBVHSztGxcnJTb3M3BhvvC2KFOJ7A==",
+      "type": "package",
+      "path": "nager.date/2.8.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "calendar.png",
+        "lib/net472/Nager.Date.dll",
+        "lib/net472/Nager.Date.xml",
+        "lib/net6.0/Nager.Date.dll",
+        "lib/net6.0/Nager.Date.xml",
+        "lib/net8.0/Nager.Date.dll",
+        "lib/net8.0/Nager.Date.xml",
+        "lib/netstandard2.0/Nager.Date.dll",
+        "lib/netstandard2.0/Nager.Date.xml",
+        "nager.date.2.8.3.nupkg.sha512",
+        "nager.date.nuspec",
+        "readme.txt"
+      ]
+    },
+    "Nager.LicenseSystem/1.1.0": {
+      "sha512": "ihcA33JzSss1gXwCx3BSFJbbHFMU04vPuyE52Yufcg073VGVMCirVnKAhs3DFPzSORJhndiMHanfaYdBflqcpg==",
+      "type": "package",
+      "path": "nager.licensesystem/1.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE/LICENSE",
+        "lib/net472/Nager.LicenseSystem.dll",
+        "lib/net472/Nager.LicenseSystem.xml",
+        "lib/net6.0/Nager.LicenseSystem.dll",
+        "lib/net6.0/Nager.LicenseSystem.xml",
+        "lib/net8.0/Nager.LicenseSystem.dll",
+        "lib/net8.0/Nager.LicenseSystem.xml",
+        "lib/netstandard2.0/Nager.LicenseSystem.dll",
+        "lib/netstandard2.0/Nager.LicenseSystem.xml",
+        "nager.licensesystem.1.1.0.nupkg.sha512",
+        "nager.licensesystem.nuspec",
+        "packageicon.png"
+      ]
+    },
     "Newtonsoft.Json/13.0.3": {
       "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
       "type": "package",
@@ -4515,6 +4588,7 @@
       "Microsoft.EntityFrameworkCore.Design >= 8.0.4",
       "Microsoft.EntityFrameworkCore.Sqlite >= 8.0.4",
       "Microsoft.Extensions.Hosting >= 8.0.0",
+      "Nager.Date >= 2.8.3",
       "Serilog.AspNetCore >= 8.0.1",
       "Serilog.Sinks.File >= 5.0.0"
     ]
@@ -4525,11 +4599,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
+      "projectUniqueName": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj",
       "projectName": "MorningSignInBot",
-      "projectPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
+      "projectPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj",
       "packagesPath": "C:\\Users\\erikg\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\obj\\",
+      "outputPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\erikg\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -4591,6 +4665,10 @@
           "Microsoft.Extensions.Hosting": {
             "target": "Package",
             "version": "[8.0.0, )"
+          },
+          "Nager.Date": {
+            "target": "Package",
+            "version": "[2.8.3, )"
           },
           "Serilog.AspNetCore": {
             "target": "Package",

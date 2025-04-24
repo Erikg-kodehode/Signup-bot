@@ -9,7 +9,7 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
 - Stores sign-in records (User ID, Username, Timestamp (UTC), Type) in a local SQLite database.
 - Prevents duplicate sign-ins per day.
 - Provides admin commands to view sign-ins (optionally filtered by role/date), delete entries, list missing users by role, and trigger the message manually. Uses Autocomplete for date suggestions.
-- Skips posting on weekends (Saturday/Sunday).
+- Skips posting on weekends (Saturday/Sunday) **and Norwegian public holidays**.
 - Uses Norwegian language for user interactions.
 
 ## Setup
@@ -22,7 +22,8 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
     git clone <your-repository-url>
     cd MorningSignInBot
     ```
-3.  **Configure:**
+3.  **Install Packages:** If you haven't already, run `dotnet restore`. (You'll also need the `Nager.Date` package added: `dotnet add package Nager.Date`).
+4.  **Configure:**
     - **Bot Token (Secret):** Initialize user secrets (`dotnet user-secrets init`) and set your token (`dotnet user-secrets set "Discord:BotToken" "YOUR_NEW_BOT_TOKEN"`). Remove the token from `appsettings.json`.
     - **`appsettings.json`:**
       - `Discord:TargetChannelId`: Set the ID of the channel where the daily message should be posted.
@@ -30,16 +31,16 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
       - `Discord:SignInMinute`: Minute (0-59) to post the message (e.g., 0 for :00).
       - `Database:Path`: (Optional) Change the relative path/filename for the SQLite DB file (default: `Data/signins.db`).
       - `Serilog`: (Optional) Adjust logging levels and file paths/retention.
-4.  **Database Migration:** Apply the Entity Framework Core migrations to create the database file:
+5.  **Database Migration:** Apply the Entity Framework Core migrations to create the database file:
     ```bash
     dotnet ef database update
     ```
     (This command needs to be run from the directory containing the `.csproj` file).
-5.  **Run the Bot:**
+6.  **Run the Bot:**
     ```bash
     dotnet run
     ```
-6.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`) and invite it to your server. Ensure the bot has permission to view members if using the `/logg mangler` or `/logg vis [rolle]` commands (requires Server Members Intent enabled in Developer Portal).
+7.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`) and invite it to your server. Ensure the bot has permission to view members if using the `/logg mangler` or `/logg vis [rolle]` commands (requires Server Members Intent enabled in Developer Portal).
 
 ## Configuration Files
 

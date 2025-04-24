@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using MorningSignInBot.Configuration;
 using MorningSignInBot.Data;
 using MorningSignInBot.Services;
+using Nager.Date; // <-- Added using for Nager.Date
 using System;
 using System.Linq;
 using System.Reflection;
@@ -52,7 +53,6 @@ namespace MorningSignInBot
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Worker starting.");
-
             _client.Log += LogAsync;
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
@@ -66,7 +66,6 @@ namespace MorningSignInBot
 
             await _client.LoginAsync(TokenType.Bot, _settings.BotToken);
             await _client.StartAsync();
-
             await base.StartAsync(cancellationToken);
         }
 
@@ -77,7 +76,6 @@ namespace MorningSignInBot
             _logger.LogInformation("Worker stopping.");
             _timer?.Change(Timeout.Infinite, 0);
             _timer?.Dispose();
-
             if (_client != null)
             {
                 _client.Log -= LogAsync;
@@ -92,10 +90,9 @@ namespace MorningSignInBot
         private async Task OnReadyAsync()
         {
             _logger.LogInformation("Discord client is ready. Registering commands...");
-
             try
             {
-                ulong testGuildId = 1364185117182005308; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
+                ulong testGuildId = 0; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
                 if (testGuildId != 0)
                 {
                     await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true);
@@ -108,11 +105,7 @@ namespace MorningSignInBot
                     _logger.LogInformation("Attempting global command registration.");
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to register interaction commands.");
-            }
-
+            catch (Exception ex) { _logger.LogError(ex, "Failed to register interaction commands."); }
             ScheduleNextSignInMessage();
         }
 
@@ -123,19 +116,9 @@ namespace MorningSignInBot
                 if (interaction is SocketMessageComponent componentInteraction)
                 {
                     string customId = componentInteraction.Data.CustomId;
-                    if (customId == SignInButtonKontorId || customId == SignInButtonHjemmeId)
-                    {
-                        await HandleSignInButton(componentInteraction);
-                        return;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Unhandled button CustomId: {CustomId}", customId);
-                        try { if (!componentInteraction.HasResponded) await componentInteraction.DeferAsync(ephemeral: true); } catch { }
-                        return;
-                    }
+                    if (customId == SignInButtonKontorId || customId == SignInButtonHjemmeId) { await HandleSignInButton(componentInteraction); return; }
+                    else { _logger.LogWarning("Unhandled button CustomId: {CustomId}", customId); try { if (!componentInteraction.HasResponded) await componentInteraction.DeferAsync(ephemeral: true); } catch { } return; }
                 }
-
                 var ctx = new SocketInteractionContext(_client, interaction);
                 await _interactionService.ExecuteCommandAsync(ctx, _services);
             }
@@ -143,15 +126,7 @@ namespace MorningSignInBot
             {
                 _logger.LogError(ex, "Error handling interaction.");
                 if (interaction.Type == InteractionType.ApplicationCommand || interaction.Type == InteractionType.MessageComponent)
-                {
-                    try
-                    {
-                        var errorMsg = "En feil oppstod.";
-                        if (!interaction.HasResponded) await interaction.RespondAsync(errorMsg, ephemeral: true);
-                        else await interaction.FollowupAsync(errorMsg, ephemeral: true);
-                    }
-                    catch (Exception followupEx) { _logger.LogError(followupEx, "Failed to send error followup."); }
-                }
+                { try { var errorMsg = "En feil oppstod."; if (!interaction.HasResponded) await interaction.RespondAsync(errorMsg, ephemeral: true); else await interaction.FollowupAsync(errorMsg, ephemeral: true); } catch (Exception followupEx) { _logger.LogError(followupEx, "Failed to send error followup."); } }
             }
         }
 
@@ -159,44 +134,22 @@ namespace MorningSignInBot
         {
             string signInType = interaction.Data.CustomId == SignInButtonKontorId ? "Kontor" : "Hjemmekontor";
             string responseMessage = $"Du er nå logget inn ({signInType})!";
-
             try
             {
                 await interaction.DeferAsync(ephemeral: true);
-
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
                     DateTime startOfDayUtc = DateTime.UtcNow.Date;
-                    bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s =>
-                        s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
-
-                    if (alreadySignedIn)
-                    {
-                        _logger.LogWarning("User {User} ({UserId}) tried to sign in again today.", interaction.User.Username, interaction.User.Id);
-                        await interaction.FollowupAsync("Du har allerede logget inn i dag.", ephemeral: true);
-                        return;
-                    }
-
-                    var entry = new SignInEntry(
-                        userId: interaction.User.Id,
-                        username: interaction.User.GlobalName ?? interaction.User.Username,
-                        timestamp: DateTime.UtcNow,
-                        signInType: signInType
-                    );
-
-                    dbContext.SignIns.Add(entry);
-                    await dbContext.SaveChangesAsync();
-
+                    bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s => s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
+                    if (alreadySignedIn) { _logger.LogWarning("User {User} ({UserId}) tried to sign in again today.", interaction.User.Username, interaction.User.Id); await interaction.FollowupAsync("Du har allerede logget inn i dag.", ephemeral: true); return; }
+                    var entry = new SignInEntry(userId: interaction.User.Id, username: interaction.User.GlobalName ?? interaction.User.Username, timestamp: DateTime.UtcNow, signInType: signInType);
+                    dbContext.SignIns.Add(entry); await dbContext.SaveChangesAsync();
                     _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType);
                     await interaction.FollowupAsync(responseMessage, ephemeral: true);
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing sign-in for User {User} ({UserId}), Type {SignInType}.", interaction.User.Username, interaction.User.Id, signInType);
-                try { await interaction.FollowupAsync("Feil ved lagring av innsjekking.", ephemeral: true); } catch { }
-            }
+            catch (Exception ex) { _logger.LogError(ex, "Error processing sign-in for User {User} ({UserId}), Type {SignInType}.", interaction.User.Username, interaction.User.Id, signInType); try { await interaction.FollowupAsync("Feil ved lagring av innsjekking.", ephemeral: true); } catch { } }
         }
 
         private void ScheduleNextSignInMessage()
@@ -205,17 +158,22 @@ namespace MorningSignInBot
             DateTime nextRunTime = new DateTime(now.Year, now.Month, now.Day, _settings.SignInHour, _settings.SignInMinute, 0);
 
             if (now > nextRunTime) { nextRunTime = nextRunTime.AddDays(1); }
-            while (nextRunTime.DayOfWeek == DayOfWeek.Saturday || nextRunTime.DayOfWeek == DayOfWeek.Sunday)
+
+            // --- MODIFIED: Loop until not weekend AND not public holiday ---
+            while (nextRunTime.DayOfWeek == DayOfWeek.Saturday ||
+                   nextRunTime.DayOfWeek == DayOfWeek.Sunday ||
+                   DateSystem.IsPublicHoliday(nextRunTime, CountryCode.NO)) // Use Nager.Date check for Norway
             {
-                _logger.LogTrace("Skipping weekend day: {WeekendDay}", nextRunTime.DayOfWeek);
+                _logger.LogTrace("Skipping weekend or public holiday: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
                 nextRunTime = nextRunTime.AddDays(1);
             }
+            // -------------------------------------------------------------
 
             TimeSpan delay = nextRunTime - now;
             if (delay < TimeSpan.Zero)
             {
                 delay = TimeSpan.FromMinutes(1);
-                _logger.LogWarning("Calculated negative delay after weekend check, using fallback.");
+                _logger.LogWarning("Calculated negative delay after checks, using fallback.");
             }
 
             _logger.LogInformation("Scheduling next sign-in message check for: {RunTime} (in {Delay})", nextRunTime, delay);
@@ -233,6 +191,7 @@ namespace MorningSignInBot
             _logger.LogDebug("Timer triggered for daily message check.");
             try
             {
+                // NotificationService also has a weekend check, which is fine as double safety
                 if (_client.ConnectionState == ConnectionState.Connected)
                 {
                     await _notificationService.SendDailySignInAsync();
@@ -243,7 +202,7 @@ namespace MorningSignInBot
                 }
             }
             catch (Exception ex) { _logger.LogError(ex, "Error executing scheduled task via NotificationService."); }
-            finally { ScheduleNextSignInMessage(); }
+            finally { ScheduleNextSignInMessage(); } // Always reschedule for the next valid day
         }
 
         private Task LogAsync(LogMessage log)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj": {}
+    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj": {}
   },
   "projects": {
-    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj": {
+    "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj",
+        "projectUniqueName": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
         "projectName": "MorningSignInBot",
-        "projectPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj",
+        "projectPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
         "packagesPath": "C:\\Users\\erikg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\obj\\",
+        "outputPath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\erikg\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -73,6 +73,10 @@
             "Microsoft.Extensions.Hosting": {
               "target": "Package",
               "version": "[8.0.0, )"
+            },
+            "Nager.Date": {
+              "target": "Package",
+              "version": "[2.8.3, )"
             },
             "Serilog.AspNetCore": {
               "target": "Package",
