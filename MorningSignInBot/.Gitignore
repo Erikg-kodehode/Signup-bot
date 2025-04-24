@@ -1,61 +1,54 @@
-# User Secrets (usually outside project, but good practice)
-**/secrets.json
-
-# Docker secrets file (Crucial!)
-# If .gitignore is in the PARENT 'Signup bot' folder:
-/morningSigninBot/.env
-# If .gitignore is INSIDE the 'morningSigninBot' folder:
-# .env
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Pp]ublish/
+[Bb]uild/
+.toolstarget/
 
 # Dependencies
-**/[Bb]in/
-**/[Oo]bj/
 **/packages/
 *.nuget.props
 *.nuget.targets
 
-# Build results
-[Bb]uild/
-[Rr]elease/
-[Dd]ebug/
-[Pp]ublish/
-
-# EF Core / SQLite files
-*.db
-*.db-shm
-*.db-wal
-/morningSigninBot/Data/*.db
-/morningSigninBot/Data/*.db-shm
-/morningSigninBot/Data/*.db-wal
-# Or if .gitignore is inside morningSigninBot:
-# Data/*.db
-# Data/*.db-shm
-# Data/*.db-wal
-
-# Log Files
-**/[Ll]ogs/
-*.log
-
-# Rider / VS / OS specific
-.idea/
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-*.DS_Store
-Thumbs.db
-
-# Runtime files
-*.pyc
-*.pyo
-*.swp
-*~
-
-# ENV files (already covered above, but explicit)
+# Configuration & Secrets
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
 .env
 .env.*
 !.env.example
+**/secrets.json
+*.Development.json
+.secrets/
+bot_message_state.json
 
-# Tooling
-.toolstarget/
+# Database
+Data/*.db
+Data/*.db-*
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+[Ll]ogs/
+logs/
+*.log
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# OS specific
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.pyc
+*.pyo
