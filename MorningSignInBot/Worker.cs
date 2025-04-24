@@ -161,7 +161,7 @@ namespace MorningSignInBot
 
             while (nextRunTime.DayOfWeek == DayOfWeek.Saturday ||
                    nextRunTime.DayOfWeek == DayOfWeek.Sunday ||
-                   DateSystem.IsPublicHoliday(nextRunTime, CountryCode.NO)) // Use Nager.Date check for Norway
+                   HolidaySystem.IsPublicHoliday(nextRunTime, CountryCode.NO)) // Use Nager.Date check for Norway
             {
                 _logger.LogTrace("Skipping weekend or public holiday: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
                 nextRunTime = nextRunTime.AddDays(1);
