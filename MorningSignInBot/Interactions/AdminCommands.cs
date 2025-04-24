@@ -77,7 +77,7 @@ namespace MorningSignInBot.Interactions
                     string title = rolle == null ? $"Innsjekkinger for {targetDate:dd. MMMM umpire}" : $"Innsjekkinger for Rolle '{rolle.Name}' den {targetDate:dd. MMMM umpire}";
                     if (!signIns.Any()) { string noResultMessage = rolle == null ? $"Ingen logget inn den {targetDate:dd. MMMM umpire}." : $"Ingen med rollen '{rolle.Name}' logget inn den {targetDate:dd. MMMM umpire}."; await FollowupAsync(noResultMessage, ephemeral: true); return; }
                     var embedBuilder = new EmbedBuilder().WithTitle(title).WithColor(Color.Blue).WithTimestamp(DateTimeOffset.Now); var description = new StringBuilder();
-                    foreach (var entry in signIns) { DateTime localTime = entry.Timestamp.ToLocalTime(); string timeString = localTime.ToString("HH:mm:ss"); description.AppendLine($"**{entry.Username}** ({entry.SignInType}) - Kl. {timeString}"); }
+                    foreach (var entry in signIns) { DateTime localTime = DateTime.SpecifyKind(entry.Timestamp, DateTimeKind.Utc).ToLocalTime(); string timeString = localTime.ToString("HH:mm:ss"); description.AppendLine($"**{entry.Username}** ({entry.SignInType}) - Kl. {timeString}"); }
                     if (description.Length > 4096) { description.Length = 4090; description.Append("..."); }
                     embedBuilder.WithDescription(description.ToString()); await FollowupAsync(embed: embedBuilder.Build(), ephemeral: true);
                 }

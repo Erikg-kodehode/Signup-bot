@@ -59,7 +59,7 @@ namespace MorningSignInBot
             _client.Log += LogAsync;
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
-            
+
             try
             {
                 await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
@@ -92,7 +92,7 @@ namespace MorningSignInBot
             _logger.LogInformation("Discord client is ready. Registering commands...");
             try
             {
-                ulong testGuildId = 0; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
+                ulong testGuildId = 1364185117182005308; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
                 if (testGuildId != 0) { await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true); _logger.LogInformation("Registered commands to Guild ID: {GuildId}", testGuildId); }
                 else { _logger.LogWarning("Test Guild ID not set. Attempting global command registration (may take up to an hour)."); await _interactionService.RegisterCommandsGloballyAsync(true); _logger.LogInformation("Attempting global command registration."); }
             }
@@ -126,7 +126,7 @@ namespace MorningSignInBot
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>(); DateTime startOfDayUtc = DateTime.UtcNow.Date; bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s => s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
                     if (alreadySignedIn) { _logger.LogWarning("User {User} ({UserId}) tried to sign in again today.", interaction.User.Username, interaction.User.Id); await interaction.FollowupAsync("Du har allerede logget inn i dag.", ephemeral: true); return; }
-                    var entry = new SignInEntry(userId: interaction.User.Id, username: interaction.User.GlobalName ?? interaction.User.Username, timestamp: DateTime.UtcNow, signInType: signInType); dbContext.SignIns.Add(entry); await dbContext.SaveChangesAsync(); _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType); await interaction.FollowupAsync(responseMessage, ephemeral: true);
+                    var entry = new SignInEntry(userId: interaction.User.Id, username: interaction.User.GlobalName ?? interaction.User.Username, timestamp: DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc), signInType: signInType); dbContext.SignIns.Add(entry); await dbContext.SaveChangesAsync(); _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType); await interaction.FollowupAsync(responseMessage, ephemeral: true);
                 }
             }
             catch (Exception ex) { _logger.LogError(ex, "Error processing sign-in for User {User} ({UserId}), Type {SignInType}.", interaction.User.Username, interaction.User.Id, signInType); try { await interaction.FollowupAsync("Feil ved lagring av innsjekking.", ephemeral: true); } catch { } }
@@ -144,7 +144,7 @@ namespace MorningSignInBot
                    _norwayCalendar.IsPublicHoliday(nextRunTime)) // Check if it's a Norwegian public holiday
             {
                 string holidayName = null;
-                
+
                 if (_norwayCalendar.IsPublicHoliday(nextRunTime))
                 {
                     var holidays = _norwayCalendar.PublicHolidays(nextRunTime.Year);
@@ -156,7 +156,7 @@ namespace MorningSignInBot
                 {
                     _logger.LogTrace("Skipping weekend: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
                 }
-                
+
                 nextRunTime = nextRunTime.AddDays(1);
             }
 
