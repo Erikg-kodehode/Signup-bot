@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "hnKtHCHAlUk=",
+  "dgSpecHash": "inlozqE60MI=",
   "success": true,
-  "projectFilePath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSignInBot\\MorningSignInBot.csproj",
+  "projectFilePath": "C:\\Users\\erikg\\Documents\\Dev\\Signup bot\\MorningSigninBot\\MorningSignInBot.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\erikg\\.nuget\\packages\\discord.net.commands\\3.15.0\\discord.net.commands.3.15.0.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\discord.net.core\\3.15.0\\discord.net.core.3.15.0.nupkg.sha512",
@@ -55,9 +55,8 @@
     "C:\\Users\\erikg\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\8.0.0\\microsoft.extensions.options.configurationextensions.8.0.0.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\mono.texttemplating\\2.2.1\\mono.texttemplating.2.2.1.nupkg.sha512",
-    "C:\\Users\\erikg\\.nuget\\packages\\nager.date\\2.8.3\\nager.date.2.8.3.nupkg.sha512",
-    "C:\\Users\\erikg\\.nuget\\packages\\nager.licensesystem\\1.1.0\\nager.licensesystem.1.1.0.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\erikg\\.nuget\\packages\\publicholiday\\2.34.0\\publicholiday.2.34.0.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\serilog\\3.1.1\\serilog.3.1.1.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\serilog.aspnetcore\\8.0.1\\serilog.aspnetcore.8.0.1.nupkg.sha512",
     "C:\\Users\\erikg\\.nuget\\packages\\serilog.extensions.hosting\\8.0.0\\serilog.extensions.hosting.8.0.0.nupkg.sha512",

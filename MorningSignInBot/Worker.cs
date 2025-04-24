@@ -9,7 +9,8 @@ using Microsoft.Extensions.Options;
 using MorningSignInBot.Configuration;
 using MorningSignInBot.Data;
 using MorningSignInBot.Services;
-using Nager.Date; // <-- Added this using statement
+using PublicHoliday; // Holiday calculation library
+using System.Collections.Generic; // For IEnumerable
 using System;
 using System.Linq;
 using System.Reflection;
@@ -27,6 +28,7 @@ namespace MorningSignInBot
         private readonly IServiceProvider _services;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly INotificationService _notificationService;
+        private readonly NorwayPublicHoliday _norwayCalendar;
         private System.Threading.Timer? _timer;
 
         private const string SignInButtonKontorId = "daily_signin_kontor";
@@ -48,6 +50,7 @@ namespace MorningSignInBot
             _services = services;
             _scopeFactory = scopeFactory;
             _notificationService = notificationService;
+            _norwayCalendar = new NorwayPublicHoliday();
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
@@ -56,14 +59,13 @@ namespace MorningSignInBot
             _client.Log += LogAsync;
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
-
+            
             try
             {
                 await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
                 _logger.LogInformation("Interaction modules loaded.");
             }
             catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules."); }
-
             await _client.LoginAsync(TokenType.Bot, _settings.BotToken);
             await _client.StartAsync();
             await base.StartAsync(cancellationToken);
@@ -78,9 +80,7 @@ namespace MorningSignInBot
             _timer?.Dispose();
             if (_client != null)
             {
-                _client.Log -= LogAsync;
-                _client.Ready -= OnReadyAsync;
-                _client.InteractionCreated -= HandleInteractionAsync;
+                _client.Log -= LogAsync; _client.Ready -= OnReadyAsync; _client.InteractionCreated -= HandleInteractionAsync;
                 try { await _client.StopAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client stop."); }
                 try { await _client.LogoutAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client logout."); }
             }
@@ -93,17 +93,8 @@ namespace MorningSignInBot
             try
             {
                 ulong testGuildId = 0; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
-                if (testGuildId != 0)
-                {
-                    await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true);
-                    _logger.LogInformation("Registered commands to Guild ID: {GuildId}", testGuildId);
-                }
-                else
-                {
-                    _logger.LogWarning("Test Guild ID not set. Attempting global command registration (may take up to an hour).");
-                    await _interactionService.RegisterCommandsGloballyAsync(true);
-                    _logger.LogInformation("Attempting global command registration.");
-                }
+                if (testGuildId != 0) { await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true); _logger.LogInformation("Registered commands to Guild ID: {GuildId}", testGuildId); }
+                else { _logger.LogWarning("Test Guild ID not set. Attempting global command registration (may take up to an hour)."); await _interactionService.RegisterCommandsGloballyAsync(true); _logger.LogInformation("Attempting global command registration."); }
             }
             catch (Exception ex) { _logger.LogError(ex, "Failed to register interaction commands."); }
             ScheduleNextSignInMessage();
@@ -114,13 +105,8 @@ namespace MorningSignInBot
             try
             {
                 if (interaction is SocketMessageComponent componentInteraction)
-                {
-                    string customId = componentInteraction.Data.CustomId;
-                    if (customId == SignInButtonKontorId || customId == SignInButtonHjemmeId) { await HandleSignInButton(componentInteraction); return; }
-                    else { _logger.LogWarning("Unhandled button CustomId: {CustomId}", customId); try { if (!componentInteraction.HasResponded) await componentInteraction.DeferAsync(ephemeral: true); } catch { } return; }
-                }
-                var ctx = new SocketInteractionContext(_client, interaction);
-                await _interactionService.ExecuteCommandAsync(ctx, _services);
+                { string customId = componentInteraction.Data.CustomId; if (customId == SignInButtonKontorId || customId == SignInButtonHjemmeId) { await HandleSignInButton(componentInteraction); return; } else { _logger.LogWarning("Unhandled button CustomId: {CustomId}", customId); try { if (!componentInteraction.HasResponded) await componentInteraction.DeferAsync(ephemeral: true); } catch { } return; } }
+                var ctx = new SocketInteractionContext(_client, interaction); await _interactionService.ExecuteCommandAsync(ctx, _services);
             }
             catch (Exception ex)
             {
@@ -132,21 +118,15 @@ namespace MorningSignInBot
 
         private async Task HandleSignInButton(SocketMessageComponent interaction)
         {
-            string signInType = interaction.Data.CustomId == SignInButtonKontorId ? "Kontor" : "Hjemmekontor";
-            string responseMessage = $"Du er nå logget inn ({signInType})!";
+            string signInType = interaction.Data.CustomId == SignInButtonKontorId ? "Kontor" : "Hjemmekontor"; string responseMessage = $"Du er nå logget inn ({signInType})!";
             try
             {
                 await interaction.DeferAsync(ephemeral: true);
                 using (var scope = _scopeFactory.CreateScope())
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
-                    DateTime startOfDayUtc = DateTime.UtcNow.Date;
-                    bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s => s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
+                    var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>(); DateTime startOfDayUtc = DateTime.UtcNow.Date; bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s => s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
                     if (alreadySignedIn) { _logger.LogWarning("User {User} ({UserId}) tried to sign in again today.", interaction.User.Username, interaction.User.Id); await interaction.FollowupAsync("Du har allerede logget inn i dag.", ephemeral: true); return; }
-                    var entry = new SignInEntry(userId: interaction.User.Id, username: interaction.User.GlobalName ?? interaction.User.Username, timestamp: DateTime.UtcNow, signInType: signInType);
-                    dbContext.SignIns.Add(entry); await dbContext.SaveChangesAsync();
-                    _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType);
-                    await interaction.FollowupAsync(responseMessage, ephemeral: true);
+                    var entry = new SignInEntry(userId: interaction.User.Id, username: interaction.User.GlobalName ?? interaction.User.Username, timestamp: DateTime.UtcNow, signInType: signInType); dbContext.SignIns.Add(entry); await dbContext.SaveChangesAsync(); _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType); await interaction.FollowupAsync(responseMessage, ephemeral: true);
                 }
             }
             catch (Exception ex) { _logger.LogError(ex, "Error processing sign-in for User {User} ({UserId}), Type {SignInType}.", interaction.User.Username, interaction.User.Id, signInType); try { await interaction.FollowupAsync("Feil ved lagring av innsjekking.", ephemeral: true); } catch { } }
@@ -156,24 +136,32 @@ namespace MorningSignInBot
         {
             DateTime now = DateTime.Now;
             DateTime nextRunTime = new DateTime(now.Year, now.Month, now.Day, _settings.SignInHour, _settings.SignInMinute, 0);
-
             if (now > nextRunTime) { nextRunTime = nextRunTime.AddDays(1); }
 
+            // Loop until not weekend AND not public holiday (using PublicHoliday)
             while (nextRunTime.DayOfWeek == DayOfWeek.Saturday ||
                    nextRunTime.DayOfWeek == DayOfWeek.Sunday ||
-                   HolidaySystem.IsPublicHoliday(nextRunTime, CountryCode.NO)) // Use Nager.Date check for Norway
+                   _norwayCalendar.IsPublicHoliday(nextRunTime)) // Check if it's a Norwegian public holiday
             {
-                _logger.LogTrace("Skipping weekend or public holiday: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
+                string holidayName = null;
+                
+                if (_norwayCalendar.IsPublicHoliday(nextRunTime))
+                {
+                    var holidays = _norwayCalendar.PublicHolidays(nextRunTime.Year);
+                    var holiday = holidays.FirstOrDefault(h => h.Date == nextRunTime.Date);
+                    holidayName = holiday != null ? holiday.ToString() : "Public Holiday";
+                    _logger.LogTrace("Skipping public holiday: {SkipDate:yyyy-MM-dd} ({DayOfWeek}) {HolidayName}", nextRunTime, nextRunTime.DayOfWeek, holidayName);
+                }
+                else
+                {
+                    _logger.LogTrace("Skipping weekend: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
+                }
+                
                 nextRunTime = nextRunTime.AddDays(1);
             }
 
             TimeSpan delay = nextRunTime - now;
-            if (delay < TimeSpan.Zero)
-            {
-                delay = TimeSpan.FromMinutes(1);
-                _logger.LogWarning("Calculated negative delay after checks, using fallback.");
-            }
-
+            if (delay < TimeSpan.Zero) { delay = TimeSpan.FromMinutes(1); _logger.LogWarning("Calculated negative delay after checks, using fallback."); }
             _logger.LogInformation("Scheduling next sign-in message check for: {RunTime} (in {Delay})", nextRunTime, delay);
 
             _timer?.Dispose();
@@ -189,14 +177,8 @@ namespace MorningSignInBot
             _logger.LogDebug("Timer triggered for daily message check.");
             try
             {
-                if (_client.ConnectionState == ConnectionState.Connected)
-                {
-                    await _notificationService.SendDailySignInAsync();
-                }
-                else
-                {
-                    _logger.LogWarning("Timer ticked but client was not connected. Skipping send.");
-                }
+                if (_client.ConnectionState == ConnectionState.Connected) { await _notificationService.SendDailySignInAsync(); }
+                else { _logger.LogWarning("Timer ticked but client was not connected. Skipping send."); }
             }
             catch (Exception ex) { _logger.LogError(ex, "Error executing scheduled task via NotificationService."); }
             finally { ScheduleNextSignInMessage(); }

@@ -5,12 +5,12 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
 ## Features
 
 - Posts a sign-in message every weekday morning at a configured time.
-- **Automatically deletes the previous day's sign-in message** to reduce clutter.
+- Automatically deletes the previous day's sign-in message to reduce clutter.
 - Provides buttons for signing in ("Kontor" and "Hjemmekontor").
 - Stores sign-in records (User ID, Username, Timestamp (UTC), Type) in a local SQLite database.
 - Prevents duplicate sign-ins per day.
 - Provides admin commands to view sign-ins (optionally filtered by role/date), delete entries, list missing users by role, and trigger the message manually. Uses Autocomplete for date suggestions.
-- Skips posting on weekends (Saturday/Sunday) and Norwegian public holidays.
+- Skips posting on weekends (Saturday/Sunday) and Norwegian public holidays (using NordicHolidays.NET library).
 - Uses Norwegian language for user interactions.
 
 ## Setup
@@ -23,7 +23,7 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
     git clone <your-repository-url>
     cd MorningSignInBot
     ```
-3.  **Install Packages:** If you haven't already, run `dotnet restore`. (Requires packages like Discord.Net, EFCore.Sqlite, Serilog, Nager.Date).
+3.  **Install Packages:** If you haven't already, run `dotnet restore`. (Requires packages like Discord.Net, EFCore.Sqlite, Serilog, NordicHolidays.NET).
 4.  **Configure:**
     - **Bot Token (Secret):** Initialize user secrets (`dotnet user-secrets init`) and set your token (`dotnet user-secrets set "Discord:BotToken" "YOUR_NEW_BOT_TOKEN"`). Remove the token from `appsettings.json`.
     - **`appsettings.json`:**
@@ -41,7 +41,7 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
     ```bash
     dotnet run
     ```
-7.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`, **`Manage Messages`** (for deleting old messages)) and invite it to your server. Ensure the bot has permission to view members if using the `/logg mangler` or `/logg vis [rolle]` commands (requires Server Members Intent enabled in Developer Portal).
+7.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`, **`Manage Messages`**) and invite it to your server. Ensure the bot has permission to view members if using the `/logg mangler` or `/logg vis [rolle]` commands (requires Server Members Intent enabled in Developer Portal).
 
 ## Configuration Files
 

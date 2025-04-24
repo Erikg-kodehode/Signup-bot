@@ -9,10 +9,10 @@ namespace MorningSignInBot.Data
         [Key]
         public int Id { get; set; }
         public ulong UserId { get; set; }
-        [MaxLength(100)]
+        [System.ComponentModel.DataAnnotations.MaxLength(100)]
         public required string Username { get; set; }
         public DateTime Timestamp { get; set; }
-        [MaxLength(20)]
+        [System.ComponentModel.DataAnnotations.MaxLength(20)]
         public required string SignInType { get; set; }
 
         public SignInEntry() { }

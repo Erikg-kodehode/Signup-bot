@@ -1,0 +1,6 @@
+C:\Users\erikg\Documents\Dev\Signup bot\Tests\MorningSignInBot.Tests\obj\Debug\net8.0\MorningSignInBot.Tests.csproj.AssemblyReference.cache
+C:\Users\erikg\Documents\Dev\Signup bot\Tests\MorningSignInBot.Tests\obj\Debug\net8.0\MorningSignInBot.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\erikg\Documents\Dev\Signup bot\Tests\MorningSignInBot.Tests\obj\Debug\net8.0\MorningSignInBot.Tests.AssemblyInfoInputs.cache
+C:\Users\erikg\Documents\Dev\Signup bot\Tests\MorningSignInBot.Tests\obj\Debug\net8.0\MorningSignInBot.Tests.AssemblyInfo.cs
+C:\Users\erikg\Documents\Dev\Signup bot\Tests\MorningSignInBot.Tests\obj\Debug\net8.0\MorningSignInBot.Tests.csproj.CoreCompileInputs.cache
+C:\Users\erikg\Documents\Dev\Signup bot\Tests\MorningSignInBot.Tests\obj\Debug\net8.0\MorningSignInBot.Tests.sourcelink.json
