@@ -60,12 +60,6 @@ namespace MorningSignInBot
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
 
-            try
-            {
-                await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-                _logger.LogInformation("Interaction modules loaded.");
-            }
-            catch (Exception ex) { _logger.LogError(ex, "Error loading interaction modules."); }
             await _client.LoginAsync(TokenType.Bot, _settings.BotToken);
             await _client.StartAsync();
             await base.StartAsync(cancellationToken);
@@ -89,14 +83,93 @@ namespace MorningSignInBot
 
         private async Task OnReadyAsync()
         {
-            _logger.LogInformation("Discord client is ready. Registering commands...");
+            _logger.LogInformation("Discord client is ready. Starting command registration process...");
             try
             {
-                ulong testGuildId = 1364185117182005308; // <-- REPLACE 0 WITH YOUR ACTUAL TEST SERVER/GUILD ID!
-                if (testGuildId != 0) { await _interactionService.RegisterCommandsToGuildAsync(testGuildId, true); _logger.LogInformation("Registered commands to Guild ID: {GuildId}", testGuildId); }
-                else { _logger.LogWarning("Test Guild ID not set. Attempting global command registration (may take up to an hour)."); await _interactionService.RegisterCommandsGloballyAsync(true); _logger.LogInformation("Attempting global command registration."); }
+                ulong testGuildId = Constants.GUILD_ID;
+                var guild = _client.GetGuild(testGuildId);
+
+                if (guild == null)
+                {
+                    _logger.LogError("Could not find guild with ID {GuildId}", testGuildId);
+                    return;
+                }
+
+                // Step 1: Clear all modules and commands
+                _interactionService.ClearModules();
+                _logger.LogInformation("Cleared all interaction modules");
+
+                // Step 2: Remove all global commands first
+                try
+                {
+                    _logger.LogInformation("Removing all global commands...");
+                    var globalCommands = await _client.GetGlobalApplicationCommandsAsync();
+                    foreach (var cmd in globalCommands)
+                    {
+                        await cmd.DeleteAsync();
+                        _logger.LogDebug("Deleted global command: {CommandName}", cmd.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error removing global commands");
+                }
+
+                // Step 3: Remove all guild commands
+                try
+                {
+                    _logger.LogInformation("Removing all guild commands from {GuildId}...", guild.Id);
+                    var guildCommands = await guild.GetApplicationCommandsAsync();
+                    foreach (var cmd in guildCommands)
+                    {
+                        await cmd.DeleteAsync();
+                        _logger.LogDebug("Deleted guild command: {CommandName}", cmd.Name);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error removing guild commands");
+                }
+
+                // Step 4: Wait to ensure all deletions are processed
+                await Task.Delay(5000);
+
+                // Step 5: Register modules
+                try
+                {
+                    await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+                    _logger.LogInformation("Added interaction modules");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error adding modules");
+                    return;
+                }
+
+                // Step 6: Register commands to guild
+                try
+                {
+                    await _interactionService.RegisterCommandsToGuildAsync(guild.Id, true);
+                    _logger.LogInformation("Registered commands to guild {GuildId}", guild.Id);
+
+                    // Verify registration
+                    var newCommands = await guild.GetApplicationCommandsAsync();
+                    _logger.LogInformation("Successfully registered {Count} commands:", newCommands.Count);
+                    foreach (var cmd in newCommands)
+                    {
+                        _logger.LogInformation("- {CommandName} (ID: {CommandId})", cmd.Name, cmd.Id);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error registering commands to guild");
+                }
             }
-            catch (Exception ex) { _logger.LogError(ex, "Failed to register interaction commands."); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to register commands");
+            }
+
             ScheduleNextSignInMessage();
         }
 

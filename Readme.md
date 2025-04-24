@@ -30,6 +30,7 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
       - `Discord:TargetChannelId`: Set the ID of the channel where the daily message should be posted.
       - `Discord:SignInHour`: Hour (0-23) to post the message (e.g., 8 for 8 AM).
       - `Discord:SignInMinute`: Minute (0-59) to post the message (e.g., 0 for :00).
+      - `Discord:Guilds`: Configuration for servers the bot will operate in (see Multi-Server Setup below)
       - `Database:Path`: (Optional) Change the relative path/filename for the SQLite DB file (default: `Data/signins.db`).
       - `Serilog`: (Optional) Adjust logging levels and file paths/retention.
 5.  **Database Migration:** Apply the Entity Framework Core migrations to create the database file:
@@ -49,39 +50,67 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
 - **User Secrets (`secrets.json`)**: Used during development for the `Discord:BotToken`.
 - **Environment Variables (Production)**: For production, set `Discord__BotToken` (note double underscore) and potentially override other settings using environment variables (e.g., `Discord__TargetChannelId`, `Database__Path`).
 
+## Multi-Server Setup
+
+The bot now supports running on multiple Discord servers (guilds) with different admin roles for each. Configure this in `appsettings.json`:
+
+```json
+{
+  "Discord": {
+    "Guilds": [
+      {
+        "GuildId": 123456789012345678,
+        "AdminRoleId": 123456789012345678,
+        "GuildName": "Your Server Name"
+      },
+      {
+        "GuildId": 987654321098765432,
+        "AdminRoleId": 876543210987654321,
+        "GuildName": "Another Server"
+      }
+    ]
+  }
+}
+```
+
+Each server configuration includes:
+- `GuildId`: Discord server ID
+- `AdminRoleId`: Role ID that has permission to use admin commands
+- `GuildName`: Friendly name for logging (optional)
+
 ## Admin Commands
 
-These commands require the user to have the specific role configured in `Interactions/AdminCommands.cs` (**replace the placeholder `123456789012345678` with your Role ID or use `[RequireRole("YourRoleName")]`**). Commands start with `/logg`.
+These commands require the user to have the admin role configured for their server in `appsettings.json` under the appropriate guild configuration. Commands start with `/admin`.
 
-- `/logg vis [rolle?] [dato?]`
+- `/admin vis [rolle?] [dato?]`
 
   - Viser hvem som logget seg inn. Kan filtreres på rolle og/eller dato.
   - `rolle`: Valgfri. Viser kun brukere med denne rollen. (Discord viser liste).
   - `dato`: Valgfri. Dato i format `dd-MM-yyyy` eller `yyyy-MM-dd`. Tilbyr forslag ("I dag", "I går", formater). Hvis utelatt, vises dagens innsjekkinger.
-  - Eksempel (alle i dag): `/logg vis`
-  - Eksempel (rolle i dag): `/logg vis rolle:@Ansatt`
-  - Eksempel (alle på dato): `/logg vis dato:23-04-2025`
-  - Eksempel (rolle på dato): `/logg vis rolle:@Ansatt dato:23-04-2025`
+  - Eksempel (alle i dag): `/admin vis`
+  - Eksempel (rolle i dag): `/admin vis rolle:@Ansatt`
+  - Eksempel (alle på dato): `/admin vis dato:23-04-2025`
+  - Eksempel (rolle på dato): `/admin vis rolle:@Ansatt dato:23-04-2025`
 
-- `/logg sendnå`
+- `/admin sendnå`
 
   - Tvinger botten til å sende dagens innsjekkingsmelding umiddelbart (vil også forsøke å slette forrige melding først).
   - Nyttig for testing eller hvis den planlagte sendingen feilet.
 
-- `/logg slett [bruker] [dato]`
+- `/admin slett [bruker] [dato]`
 
   - Sletter innsjekkingen for en spesifikk `bruker` på en gitt `dato`.
   - `bruker`: Velg brukeren fra listen Discord viser.
   - `dato`: Skriv inn datoen i format `dd-MM-yyyy` eller `yyyy-MM-dd`. Tilbyr forslag.
-  - Eksempel: `/logg slett bruker:@OlaNordmann dato:23-04-2025`
+  - Eksempel: `/admin slett bruker:@OlaNordmann dato:23-04-2025`
 
-- `/logg mangler [rolle] [dato?]`
+- `/admin mangler [rolle] [dato?]`
   - Viser hvilke brukere som har den spesifiserte `rolle` men som _ikke_ sjekket inn på den gitte `dato`.
   - `rolle`: Velg rollen fra listen Discord viser.
   - `dato`: Valgfri. Dato i format `dd-MM-yyyy` eller `yyyy-MM-dd`. Tilbyr forslag. Hvis utelatt, vises for dagens dato.
   - Krever at botten har tilgang til serverens medlemsliste (Server Members Intent).
-  - Eksempel: `/logg mangler rolle:@Ansatt dato:23-04-2025`
-  - Eksempel: `/logg mangler rolle:@Alle` (viser for i dag)
+  - Eksempel: `/admin mangler rolle:@Ansatt dato:23-04-2025`
+  - Eksempel: `/admin mangler rolle:@Alle` (viser for i dag)
 
 ## Database
 

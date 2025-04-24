@@ -1,36 +1,47 @@
 # --- Build Stage ---
-# Use the .NET SDK image to build the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /source
 
-# Copy csproj and restore dependencies first for layer caching
+# Copy csproj and restore dependencies first (layer caching)
 COPY *.csproj .
 RUN dotnet restore
 
 # Copy the rest of the application code
 COPY . .
 
-# Ensure EF Core tools are available if needed during build (usually not needed for runtime)
-# RUN dotnet tool install --global dotnet-ef --version 8.*
-
-# Run migrations during build (optional, usually better to run on startup like Program.cs does)
-# RUN dotnet ef database update
-
-# Publish the application to a specific folder, using Release configuration
+# Publish the application
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # --- Final Runtime Stage ---
-# Use the smaller .NET Runtime image for the final container
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
+# Create non-root user for security
+RUN adduser --disabled-password --gecos "" --home "/app" --shell "/bin/bash" --uid 1000 appuser && \
+    mkdir -p /app/data /app/logs && \
+    chown -R appuser:appuser /app
+
 # Copy the published output from the build stage
 COPY --from=build /app/publish .
+COPY --from=build /app/publish/appsettings.*.json /app/
 
-# Define the entry point for the container
+# Set ownership for the application files
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Set environment variables
+ENV DOTNET_ENVIRONMENT=Production \
+    ASPNETCORE_URLS=http://+:80 \
+    TZ=Europe/Oslo
+
+# Expose volume mount points
+VOLUME ["/app/data", "/app/logs"]
+
+# Define the entry point
 ENTRYPOINT ["dotnet", "MorningSignInBot.dll"]
 
-# Note: Data Volume and Environment Variables (like Bot Token)
-# should be configured when *running* the container (e.g., via docker-compose.yml)
-# The database file will be created inside the container at /app/Data/signins.db
-# (relative to WORKDIR) based on appsettings.json if the volume isn't mapped.
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD dotnet --info || exit 1

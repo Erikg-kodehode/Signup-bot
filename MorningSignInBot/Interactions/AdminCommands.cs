@@ -15,8 +15,8 @@ using System.Threading.Tasks;
 
 namespace MorningSignInBot.Interactions
 {
-    [RequireRole(1364526514665816084)]
-    [Group("logg", "Kommandoer for innsjekkinger.")]
+    [RequireRole(1364185117182005308)]
+    [Group("admin", "Administrative kommandoer for innsjekking.")]
     public class AdminCommands : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly IServiceScopeFactory _scopeFactory;
@@ -35,6 +35,23 @@ namespace MorningSignInBot.Interactions
             _logger = logger;
         }
 
+        private async Task SendTemporaryResponseAsync(string message, bool isError = false, int deleteAfterSeconds = 10)
+        {
+            try
+            {
+                var response = await FollowupAsync(message, 
+                    ephemeral: true,  // Keep ephemeral for privacy
+                    embeds: isError ? new[] { new EmbedBuilder().WithDescription(message).WithColor(Color.Red).Build() } : null);
+                
+                // For ephemeral messages, we'll just let them naturally disappear from the user's view
+                // Discord doesn't allow deletion of ephemeral messages
+                _logger.LogDebug("Sent temporary response: {Message}", message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send temporary response");
+            }
+        }
         private bool TryParseDate(string? dateString, out DateTime targetDate)
         {
             targetDate = DateTime.MinValue;
@@ -89,9 +106,18 @@ namespace MorningSignInBot.Interactions
         public async Task ForceSendSignIn()
         {
             _logger.LogInformation("Admin {AdminUser} triggered manual sign-in message send.", Context.User.Username);
-            await RespondAsync("Forsøker å sende innsjekkingsmeldingen...", ephemeral: true);
-            try { await _notificationService.SendDailySignInAsync(); await FollowupAsync("Innsjekkingsmelding forsøkt sendt.", ephemeral: true); }
-            catch (Exception ex) { _logger.LogError(ex, "Error during manual trigger by admin {AdminUser}", Context.User.Username); await FollowupAsync("En feil oppstod under manuell sending.", ephemeral: true); }
+            await DeferAsync(ephemeral: true);
+            try 
+            {
+                await _notificationService.DeletePreviousMessageAsync();
+                await _notificationService.SendDailySignInAsync();
+                await SendTemporaryResponseAsync("Innsjekkingsmelding sendt og forrige melding slettet.", false, 5);
+            }
+            catch (Exception ex) 
+            { 
+                _logger.LogError(ex, "Error during manual trigger by admin {AdminUser}", Context.User.Username); 
+                await SendTemporaryResponseAsync("En feil oppstod under sending av melding.", true, 10);
+            }
         }
 
         [SlashCommand("slett", "Sletter en innsjekking for en bruker på en gitt dato.")]

@@ -1,38 +1,38 @@
 version: '3.8'
 
 services:
-  signin-bot:
+  signin-bot-dev:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: morning-signin-bot
-    restart: unless-stopped
+      target: build
+    container_name: morning-signin-bot-dev
+    restart: "no"
     environment:
-      - DOTNET_ENVIRONMENT=Production
+      - DOTNET_ENVIRONMENT=Development
       - TZ=Europe/Oslo
-      # Bot configuration from .env file
       - Discord__BotToken=${DISCORD_BOT_TOKEN}
       - Discord__TargetChannelId=${DISCORD_CHANNEL_ID}
       - Discord__Guilds__0__GuildId=${DISCORD_GUILD_ID}
       - Discord__Guilds__0__AdminRoleId=${DISCORD_ADMIN_ROLE_ID}
       - Discord__Guilds__0__GuildName=${DISCORD_GUILD_NAME}
+      - DOTNET_WATCH_RESTART_ON_RUDE_EDIT=true
     volumes:
-      - bot-data:/app/data
-      - bot-logs:/app/logs
+      - .:/source
+      - bot-dev-data:/app/data
+      - bot-dev-logs:/app/logs
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    healthcheck:
-      test: ["CMD", "dotnet", "--info"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
+    command: dotnet watch run --no-restore
+    ports:
+      - "5000:80"
 
 volumes:
-  bot-data:
+  bot-dev-data:
     driver: local
-  bot-logs:
+  bot-dev-logs:
     driver: local
+
