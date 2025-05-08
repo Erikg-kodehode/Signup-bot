@@ -97,7 +97,7 @@ function Test-EnvFile {
     }
 
     if ($missingVars.Count -gt 0) {
-        Write-ColorMessage "Error: Missing required variables in $EnvFile:" $Colors.Error
+        Write-ColorMessage "Error: Missing required variables in environment file:" $Colors.Error
         foreach ($var in $missingVars) {
             Write-ColorMessage "  - $var" $Colors.Error
         }
