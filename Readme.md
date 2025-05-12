@@ -15,6 +15,8 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
 
 ## Setup
 
+### Local Development Setup
+
 1.  **Prerequisites:**
     - .NET 8 SDK (or newer)
     - Git (optional, for version control)
@@ -44,11 +46,83 @@ A simple Discord bot written in C# using Discord.Net for handling daily work sig
     ```
 7.  **Invite Bot:** Generate an OAuth2 URL (via Discord Developer Portal -> Your App -> OAuth2 -> URL Generator) with scopes `bot` and `applications.commands` and necessary permissions (`View Channels`, `Send Messages`, **`Manage Messages`**) and invite it to your server. Ensure the bot has permission to view members if using the `/logg mangler` or `/logg vis [rolle]` commands (requires Server Members Intent enabled in Developer Portal).
 
+### Docker Swarm Deployment
+
+The bot can be deployed using Docker Swarm for improved secrets management and container orchestration.
+
+1. **Prerequisites:**
+   - Docker Desktop with Swarm mode enabled
+   - PowerShell 5.1 or later
+
+2. **Initialize Docker Swarm:**
+   ```powershell
+   docker swarm init
+   ```
+
+3. **Configure Bot Token:**
+   There are three ways to provide the bot token:
+   
+   a) **Production (Recommended):**
+   ```powershell
+   echo "your-bot-token" | docker secret create discord_bot_token -
+   ```
+   
+   b) **Development:**
+   - Leave token empty and input via console (enabled by `stdin_open: true` in docker-compose.yml)
+   - Or use the secret method above with a development token
+   
+   c) **Change Existing Token:**
+   ```powershell
+   # Remove existing secret
+   docker secret rm discord_bot_token
+   # Create new secret
+   echo "your-new-bot-token" | docker secret create discord_bot_token -
+   # Update the service
+   docker service update --force signin-bot_signin-bot
+   ```
+
+4. **Environment Configuration:**
+   Create a `.env` file:
+   ```powershell
+   @"
+   DOTNET_ENVIRONMENT=Production  # or Development
+   TZ=Europe/Oslo
+   DISCORD_CHANNEL_ID=your_channel_id
+   DISCORD_GUILD_ID=your_guild_id
+   DISCORD_ADMIN_ROLE_ID=your_admin_role_id
+   DISCORD_GUILD_NAME=Your Server Name
+   SIGNIN_HOUR=8
+   SIGNIN_MINUTE=0
+   "@ | Out-File -FilePath .env -Encoding UTF8
+   ```
+
+5. **Deploy the Stack:**
+   ```powershell
+   # Build the image
+   docker-compose build
+   
+   # Deploy the stack
+   docker stack deploy -c docker-compose.yml signin-bot
+   ```
+
+6. **Verify Deployment:**
+   ```powershell
+   # Check service status
+   docker service ls
+   
+   # View logs
+   docker service logs signin-bot_signin-bot
+   ```
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./MorningSignInBot/DEPLOYMENT.md).
+
 ## Configuration Files
 
 - **`appsettings.json`**: Main configuration for non-sensitive settings.
-- **User Secrets (`secrets.json`)**: Used during development for the `Discord:BotToken`.
-- **Environment Variables (Production)**: For production, set `Discord__BotToken` (note double underscore) and potentially override other settings using environment variables (e.g., `Discord__TargetChannelId`, `Database__Path`).
+- **Docker Secrets**: In Docker Swarm deployment, the bot token is stored securely as a Docker secret at `/run/secrets/discord_bot_token`.
+- **`.env` File**: Contains environment-specific configuration for Docker deployment.
+- **User Secrets (`secrets.json`)**: Used during local development for the `Discord:BotToken`.
+- **Environment Variables**: For non-Docker production, set `Discord__BotToken` (note double underscore) and potentially override other settings using environment variables (e.g., `Discord__TargetChannelId`, `Database__Path`).
 
 ## Multi-Server Setup
 

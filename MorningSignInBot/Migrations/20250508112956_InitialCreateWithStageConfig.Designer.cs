@@ -4,23 +4,48 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MorningSignInBot.Data; // Added correct using
+using MorningSignInBot.Data;
 
 #nullable disable
 
 namespace MorningSignInBot.Migrations
 {
     [DbContext(typeof(SignInContext))]
-    [Migration("20250422110325_InitialCreate")] // Use your actual migration ID
-    partial class InitialCreate
+    [Migration("20250508112956_InitialCreateWithStageConfig")]
+    partial class InitialCreateWithStageConfig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4"); // Match your EF Core version
+            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
 
-            modelBuilder.Entity("MorningSignInBot.Data.SignInEntry", b => // Use correct namespace
+            modelBuilder.Entity("MorningSignInBot.Configuration.StageNotificationSetting", b =>
+                {
+                    b.Property<ulong>("StageChannelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CustomMessage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("GuildId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong?>("NotificationChannelId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<ulong>("NotificationRoleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("StageChannelId");
+
+                    b.HasIndex("GuildId");
+
+                    b.ToTable("StageNotificationConfigs");
+                });
+
+            modelBuilder.Entity("MorningSignInBot.Data.SignInEntry", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

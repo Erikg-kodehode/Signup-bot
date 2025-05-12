@@ -2,37 +2,62 @@ version: '3.8'
 
 services:
   signin-bot:
+    image: morning-signin-bot:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: morning-signin-bot
-    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    secrets:
+      - discord_bot_token
+    # For development only - comment out in production
+    stdin_open: true # Keep STDIN open for Console.ReadLine()
+    tty: true        # Allocate a pseudo-TTY
     environment:
-      - DOTNET_ENVIRONMENT=Production
-      - TZ=Europe/Oslo
-      # Bot configuration from .env file
-      - Discord__BotToken=${DISCORD_BOT_TOKEN}
+      # Set non-secret defaults or ensure they are in .env
+      - DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT:-Production}
+      - TZ=${TZ:-Europe/Oslo}
+      # Keep other variables that should come from .env or host
       - Discord__TargetChannelId=${DISCORD_CHANNEL_ID}
       - Discord__Guilds__0__GuildId=${DISCORD_GUILD_ID}
       - Discord__Guilds__0__AdminRoleId=${DISCORD_ADMIN_ROLE_ID}
-      - Discord__Guilds__0__GuildName=${DISCORD_GUILD_NAME}
+      - Discord__Guilds__0__GuildName=${DISCORD_GUILD_NAME:-Your Server Name}
+      - Discord__SignInHour=${SIGNIN_HOUR:-8}
+      - Discord__SignInMinute=${SIGNIN_MINUTE:-0}
     volumes:
-      - bot-data:/app/data
-      - bot-logs:/app/logs
+      - type: volume
+        source: bot-data
+        target: /app/data
+      - type: volume
+        source: bot-logs
+        target: /app/logs
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
-    healthcheck:
-      test: ["CMD", "dotnet", "--info"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
 
 volumes:
   bot-data:
     driver: local
   bot-logs:
     driver: local
+
+secrets:
+  discord_bot_token:
+    external: true

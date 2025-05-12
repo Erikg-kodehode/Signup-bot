@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options; // Keep this
 using MorningSignInBot.Configuration;
 using MorningSignInBot.Data;
 using MorningSignInBot.Services;
@@ -20,11 +21,16 @@ namespace MorningSignInBot
     {
         public static async Task Main(string[] args)
         {
+            // --- ADD THIS LINE ---
+            Console.WriteLine($"---> Reading TEST_CHECK env var: {Environment.GetEnvironmentVariable("TEST_CHECK")}");
+            // ---------------------
+
+            // Bootstrap config for Serilog
             var bootstrapConfig = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production"}.json", optional: true)
-                .AddEnvironmentVariables()
+                .AddEnvironmentVariables() // Reads environment variables including those from Docker
                 .Build();
 
             Log.Logger = new LoggerConfiguration()
@@ -40,14 +46,28 @@ namespace MorningSignInBot
                 IHost host = Host.CreateDefaultBuilder(args)
                     .UseSerilog((context, services, configuration) => configuration
                         .ReadFrom.Configuration(context.Configuration)
-                        // .ReadFrom.Services(services) // Keep this commented out to avoid CS1503 for now
                         .Enrich.FromLogContext())
                     .ConfigureServices((hostContext, services) =>
                     {
                         services.Configure<DiscordSettings>(hostContext.Configuration.GetSection("Discord"));
-                        services.Configure<DatabaseSettings>(hostContext.Configuration.GetSection("Database"));
+                        services.Configure<DatabaseSettings>(hostContext.Configuration.GetSection("Database")); // Configure DatabaseSettings
 
-                        services.AddDbContext<SignInContext>();
+                        // Register DbContext using options from DI, including path config
+                        services.AddDbContext<SignInContext>((serviceProvider, options) =>
+                        {
+                            var dbSettings = serviceProvider.GetRequiredService<IOptions<DatabaseSettings>>().Value;
+                            string relativePath = dbSettings.Path;
+                            string basePath = AppContext.BaseDirectory;
+                            string dbPath = Path.GetFullPath(Path.Combine(basePath, relativePath));
+
+                            string? directory = Path.GetDirectoryName(dbPath);
+                            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                            {
+                                try { Directory.CreateDirectory(directory); } catch { /* Log */ }
+                            }
+                            options.UseSqlite($"Data Source={dbPath}");
+                        });
+
 
                         var discordConfig = new DiscordSocketConfig
                         {
@@ -78,7 +98,7 @@ namespace MorningSignInBot
                     catch (Exception ex)
                     {
                         Log.Fatal(ex, "Database migration failed.");
-                        Environment.Exit(1); // Exit if migration fails
+                        Environment.Exit(1);
                     }
                 }
 

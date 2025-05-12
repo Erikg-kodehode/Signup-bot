@@ -9,13 +9,14 @@ using Microsoft.Extensions.Options;
 using MorningSignInBot.Configuration;
 using MorningSignInBot.Data;
 using MorningSignInBot.Services;
-using PublicHoliday; // Holiday calculation library
-using System.Collections.Generic; // For IEnumerable
+using PublicHoliday;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord.Net;
 
 namespace MorningSignInBot
 {
@@ -23,7 +24,9 @@ namespace MorningSignInBot
     {
         private readonly ILogger<Worker> _logger;
         private readonly DiscordSocketClient _client;
-        private readonly DiscordSettings _settings;
+        // Remove _settings field as we get it from _settingsOptions when needed
+        // private readonly DiscordSettings _settings; 
+        private readonly IOptions<DiscordSettings> _settingsOptions;
         private readonly InteractionService _interactionService;
         private readonly IServiceProvider _services;
         private readonly IServiceScopeFactory _scopeFactory;
@@ -37,7 +40,7 @@ namespace MorningSignInBot
         public Worker(
             ILogger<Worker> logger,
             DiscordSocketClient client,
-            IOptions<DiscordSettings> settings,
+            IOptions<DiscordSettings> settings, // Inject IOptions
             InteractionService interactionService,
             IServiceProvider services,
             IServiceScopeFactory scopeFactory,
@@ -45,7 +48,8 @@ namespace MorningSignInBot
         {
             _logger = logger;
             _client = client;
-            _settings = settings.Value;
+            _settingsOptions = settings; // Store IOptions
+            // _settings = settings.Value; // Don't store the value directly here anymore
             _interactionService = interactionService;
             _services = services;
             _scopeFactory = scopeFactory;
@@ -53,18 +57,84 @@ namespace MorningSignInBot
             _norwayCalendar = new NorwayPublicHoliday();
         }
 
+        // Helper method to read bot token from Docker secret file
+        private async Task<string?> TryReadDockerSecretAsync()
+        {
+            const string secretPath = "/run/secrets/discord_bot_token";
+            if (File.Exists(secretPath))
+            {
+                try
+                {
+                    _logger.LogInformation("Reading bot token from Docker secret");
+                    string token = await File.ReadAllTextAsync(secretPath);
+                    return token.Trim();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to read bot token from Docker secret");
+                }
+            }
+            else
+            {
+                _logger.LogDebug("Docker secret file does not exist: {SecretPath}", secretPath);
+            }
+            return null;
+        }
+
+        // --- StartAsync ---
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Worker starting.");
             _client.Log += LogAsync;
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
+            _client.StageUpdated += HandleStageStartedAsync;
 
-            await _client.LoginAsync(TokenType.Bot, _settings.BotToken);
+            // First, try to get token from Docker secret
+            string? botToken = await TryReadDockerSecretAsync();
+            
+            // If Docker secret not found, use settings/environment
+            if (string.IsNullOrWhiteSpace(botToken))
+            {
+                _logger.LogInformation("No Docker secret found, checking configuration/environment");
+                var currentSettings = _settingsOptions.Value;
+                botToken = currentSettings.BotToken;
+            }
+
+            // --- Add Prompt Logic ---
+            if (string.IsNullOrWhiteSpace(botToken))
+            {
+                _logger.LogWarning("Bot token is missing from secrets and configuration/environment.");
+                Console.WriteLine("!!!!!! BOT TOKEN MISSING !!!!!!"); // Make it visible
+                Console.Write("Please paste your Discord Bot Token and press Enter: ");
+                botToken = Console.ReadLine(); // Read from console input
+                
+                if (string.IsNullOrWhiteSpace(botToken))
+                {
+                    _logger.LogCritical("No token provided via input. Exiting...");
+                    // Optionally, throw an exception or exit gracefully
+                    throw new InvalidOperationException("Bot token was not provided.");
+                }
+                _logger.LogInformation("Bot token received via console input.");
+            }
+            // ------------------------
+
+
+            if (string.IsNullOrWhiteSpace(botToken)) // Double check after potential input
+            {
+                _logger.LogCritical("BOT TOKEN IS MISSING. Cannot start.");
+                throw new ArgumentNullException(nameof(botToken), "Bot token cannot be empty.");
+            }
+
+            // Use the determined botToken (from config/env OR manual input)
+            await _client.LoginAsync(TokenType.Bot, botToken);
             await _client.StartAsync();
             await base.StartAsync(cancellationToken);
         }
 
+        // --- ExecuteAsync, StopAsync, OnReadyAsync, HandleInteractionAsync, HandleSignInButton ---
+        // --- ScheduleNextSignInMessage, TimerTickAsync, HandleStageStartedAsync, SanitizeForMention, LogAsync ---
+        // (Keep all other methods as they were in the previous corrected versions)
         protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -74,7 +144,11 @@ namespace MorningSignInBot
             _timer?.Dispose();
             if (_client != null)
             {
-                _client.Log -= LogAsync; _client.Ready -= OnReadyAsync; _client.InteractionCreated -= HandleInteractionAsync;
+                _client.Log -= LogAsync;
+                _client.Ready -= OnReadyAsync;
+                _client.InteractionCreated -= HandleInteractionAsync;
+                _client.StageUpdated -= HandleStageStartedAsync;
+
                 try { await _client.StopAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client stop."); }
                 try { await _client.LogoutAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client logout."); }
             }
@@ -86,88 +160,47 @@ namespace MorningSignInBot
             _logger.LogInformation("Discord client is ready. Starting command registration process...");
             try
             {
-                ulong testGuildId = Constants.GUILD_ID;
-                var guild = _client.GetGuild(testGuildId);
+                var firstGuildConfig = _settingsOptions.Value.Guilds.FirstOrDefault();
+                if (firstGuildConfig == null || firstGuildConfig.GuildId == 0)
+                {
+                    _logger.LogError("No valid Guild ID found in configuration (Discord:Guilds). Cannot register commands.");
+                    return;
+                }
+
+                ulong guildId = firstGuildConfig.GuildId;
+                var guild = _client.GetGuild(guildId);
+
+                int retries = 0;
+                while (guild == null && retries < 5)
+                {
+                    _logger.LogWarning("Guild {GuildId} not found, retrying in 5 seconds...", guildId);
+                    await Task.Delay(5000);
+                    guild = _client.GetGuild(guildId);
+                    retries++;
+                }
 
                 if (guild == null)
                 {
-                    _logger.LogError("Could not find guild with ID {GuildId}", testGuildId);
+                    _logger.LogError("Could not find guild with ID {GuildId} specified in configuration after retries.", guildId);
                     return;
                 }
 
-                // Step 1: Clear all modules and commands
-                _interactionService.ClearModules();
-                _logger.LogInformation("Cleared all interaction modules");
+                await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+                _logger.LogInformation("Added interaction modules to InteractionService.");
 
-                // Step 2: Remove all global commands first
-                try
-                {
-                    _logger.LogInformation("Removing all global commands...");
-                    var globalCommands = await _client.GetGlobalApplicationCommandsAsync();
-                    foreach (var cmd in globalCommands)
-                    {
-                        await cmd.DeleteAsync();
-                        _logger.LogDebug("Deleted global command: {CommandName}", cmd.Name);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error removing global commands");
-                }
+#if DEBUG
+                _logger.LogWarning("Registering commands to Guild ID: {GuildId} (DEBUG MODE)", guildId);
+                await _interactionService.RegisterCommandsToGuildAsync(guildId, true);
+#else
+                _logger.LogInformation("Registering commands Globally.");
+                await _interactionService.RegisterCommandsGloballyAsync(true);
+#endif
 
-                // Step 3: Remove all guild commands
-                try
-                {
-                    _logger.LogInformation("Removing all guild commands from {GuildId}...", guild.Id);
-                    var guildCommands = await guild.GetApplicationCommandsAsync();
-                    foreach (var cmd in guildCommands)
-                    {
-                        await cmd.DeleteAsync();
-                        _logger.LogDebug("Deleted guild command: {CommandName}", cmd.Name);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error removing guild commands");
-                }
-
-                // Step 4: Wait to ensure all deletions are processed
-                await Task.Delay(5000);
-
-                // Step 5: Register modules
-                try
-                {
-                    await _interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-                    _logger.LogInformation("Added interaction modules");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error adding modules");
-                    return;
-                }
-
-                // Step 6: Register commands to guild
-                try
-                {
-                    await _interactionService.RegisterCommandsToGuildAsync(guild.Id, true);
-                    _logger.LogInformation("Registered commands to guild {GuildId}", guild.Id);
-
-                    // Verify registration
-                    var newCommands = await guild.GetApplicationCommandsAsync();
-                    _logger.LogInformation("Successfully registered {Count} commands:", newCommands.Count);
-                    foreach (var cmd in newCommands)
-                    {
-                        _logger.LogInformation("- {CommandName} (ID: {CommandId})", cmd.Name, cmd.Id);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error registering commands to guild");
-                }
+                _logger.LogInformation("Command registration process completed for Guild ID: {GuildId}", guildId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to register commands");
+                _logger.LogError(ex, "Failed during Ready event tasks (Module/Command Registration)");
             }
 
             ScheduleNextSignInMessage();
@@ -178,84 +211,318 @@ namespace MorningSignInBot
             try
             {
                 if (interaction is SocketMessageComponent componentInteraction)
-                { string customId = componentInteraction.Data.CustomId; if (customId == SignInButtonKontorId || customId == SignInButtonHjemmeId) { await HandleSignInButton(componentInteraction); return; } else { _logger.LogWarning("Unhandled button CustomId: {CustomId}", customId); try { if (!componentInteraction.HasResponded) await componentInteraction.DeferAsync(ephemeral: true); } catch { } return; } }
-                var ctx = new SocketInteractionContext(_client, interaction); await _interactionService.ExecuteCommandAsync(ctx, _services);
+                {
+                    string customId = componentInteraction.Data.CustomId;
+                    if (customId == SignInButtonKontorId || customId == SignInButtonHjemmeId)
+                    {
+                        await HandleSignInButton(componentInteraction);
+                        return;
+                    }
+                }
+
+                var ctx = new SocketInteractionContext(_client, interaction);
+                var result = await _interactionService.ExecuteCommandAsync(ctx, _services);
+
+                if (!result.IsSuccess)
+                {
+                    _logger.LogError("Error executing interaction command: {ErrorReason} ({Command})", result.ErrorReason, interaction.Type);
+                    if (!interaction.HasResponded)
+                    {
+                        try
+                        {
+                            await interaction.RespondAsync("Beklager, en feil oppstod under kjøring av kommandoen.", ephemeral: true);
+                        }
+                        catch (Exception ex) { _logger.LogError(ex, "Failed to send error response for interaction {Id}", interaction.Id); }
+                    }
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling interaction.");
+                _logger.LogError(ex, "Unhandled exception during interaction handling (ID: {InteractionId})", interaction.Id);
                 if (interaction.Type == InteractionType.ApplicationCommand || interaction.Type == InteractionType.MessageComponent)
-                { try { var errorMsg = "En feil oppstod."; if (!interaction.HasResponded) await interaction.RespondAsync(errorMsg, ephemeral: true); else await interaction.FollowupAsync(errorMsg, ephemeral: true); } catch (Exception followupEx) { _logger.LogError(followupEx, "Failed to send error followup."); } }
+                {
+                    try
+                    {
+                        var errorMsg = "Beklager, en uventet feil oppstod.";
+                        if (!interaction.HasResponded) await interaction.RespondAsync(errorMsg, ephemeral: true);
+                        else await interaction.FollowupAsync(errorMsg, ephemeral: true);
+                    }
+                    catch (Exception followupEx) { _logger.LogError(followupEx, "Failed to send error followup for interaction (ID: {InteractionId})", interaction.Id); }
+                }
             }
         }
 
         private async Task HandleSignInButton(SocketMessageComponent interaction)
         {
-            string signInType = interaction.Data.CustomId == SignInButtonKontorId ? "Kontor" : "Hjemmekontor"; string responseMessage = $"Du er nå logget inn ({signInType})!";
+            string signInType = interaction.Data.CustomId == SignInButtonKontorId ? "Kontor" : "Hjemmekontor";
+            string responseMessage = $"Du er nå logget inn ({signInType})!";
+
             try
             {
                 await interaction.DeferAsync(ephemeral: true);
+
                 using (var scope = _scopeFactory.CreateScope())
                 {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>(); DateTime startOfDayUtc = DateTime.UtcNow.Date; bool alreadySignedIn = await dbContext.SignIns.AnyAsync(s => s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
-                    if (alreadySignedIn) { _logger.LogWarning("User {User} ({UserId}) tried to sign in again today.", interaction.User.Username, interaction.User.Id); await interaction.FollowupAsync("Du har allerede logget inn i dag.", ephemeral: true); return; }
-                    var entry = new SignInEntry(userId: interaction.User.Id, username: interaction.User.GlobalName ?? interaction.User.Username, timestamp: DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc), signInType: signInType); dbContext.SignIns.Add(entry); await dbContext.SaveChangesAsync(); _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType); await interaction.FollowupAsync(responseMessage, ephemeral: true);
+                    var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
+                    DateTime startOfDayUtc = DateTime.UtcNow.Date;
+
+                    bool alreadySignedIn = await dbContext.SignIns
+                        .AnyAsync(s => s.UserId == interaction.User.Id && s.Timestamp >= startOfDayUtc);
+
+                    if (alreadySignedIn)
+                    {
+                        _logger.LogWarning("User {User} ({UserId}) tried to sign in again today.", interaction.User.Username, interaction.User.Id);
+                        await interaction.FollowupAsync("Du har allerede logget inn i dag.", ephemeral: true);
+                        return;
+                    }
+
+                    var entry = new SignInEntry(
+                        userId: interaction.User.Id,
+                        username: interaction.User.GlobalName ?? interaction.User.Username,
+                        timestamp: DateTime.UtcNow,
+                        signInType: signInType
+                    );
+
+                    dbContext.SignIns.Add(entry);
+                    await dbContext.SaveChangesAsync();
+
+                    _logger.LogInformation("User {User} ({UserId}) signed in as {SignInType}.", entry.Username, entry.UserId, signInType);
+                    await interaction.FollowupAsync(responseMessage, ephemeral: true);
                 }
             }
-            catch (Exception ex) { _logger.LogError(ex, "Error processing sign-in for User {User} ({UserId}), Type {SignInType}.", interaction.User.Username, interaction.User.Id, signInType); try { await interaction.FollowupAsync("Feil ved lagring av innsjekking.", ephemeral: true); } catch { } }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing sign-in for User {User} ({UserId}), Type {SignInType}.", interaction.User.Username, interaction.User.Id, signInType);
+                try
+                {
+                    if (interaction.HasResponded)
+                        await interaction.FollowupAsync("Beklager, en feil oppstod under lagring av innsjekking.", ephemeral: true);
+                    else
+                        await interaction.RespondAsync("Beklager, en feil oppstod under lagring av innsjekking.", ephemeral: true);
+                }
+                catch (Exception followupEx)
+                {
+                    _logger.LogError(followupEx, "Failed to send error followup after sign-in save failure for {UserId}.", interaction.User.Id);
+                }
+            }
         }
+
 
         private void ScheduleNextSignInMessage()
         {
+            // Use settings from IOptions
+            var currentSettings = _settingsOptions.Value;
             DateTime now = DateTime.Now;
-            DateTime nextRunTime = new DateTime(now.Year, now.Month, now.Day, _settings.SignInHour, _settings.SignInMinute, 0);
-            if (now > nextRunTime) { nextRunTime = nextRunTime.AddDays(1); }
+            DateTime nextRunTime = new DateTime(now.Year, now.Month, now.Day, currentSettings.SignInHour, currentSettings.SignInMinute, 0);
 
-            // Loop until not weekend AND not public holiday (using PublicHoliday)
-            while (nextRunTime.DayOfWeek == DayOfWeek.Saturday ||
-                   nextRunTime.DayOfWeek == DayOfWeek.Sunday ||
-                   _norwayCalendar.IsPublicHoliday(nextRunTime)) // Check if it's a Norwegian public holiday
+            if (now > nextRunTime)
             {
-                string holidayName = null;
+                nextRunTime = nextRunTime.AddDays(1);
+            }
 
-                if (_norwayCalendar.IsPublicHoliday(nextRunTime))
+            _logger.LogDebug("Initial calculated next run time (Local): {RunTime}", nextRunTime);
+
+            while (true)
+            {
+                bool isWeekend = nextRunTime.DayOfWeek == DayOfWeek.Saturday || nextRunTime.DayOfWeek == DayOfWeek.Sunday;
+                bool isHoliday = _norwayCalendar.IsPublicHoliday(nextRunTime);
+
+                if (!isWeekend && !isHoliday)
                 {
-                    var holidays = _norwayCalendar.PublicHolidays(nextRunTime.Year);
-                    var holiday = holidays.FirstOrDefault(h => h.Date == nextRunTime.Date);
-                    holidayName = holiday != null ? holiday.ToString() : "Public Holiday";
-                    _logger.LogTrace("Skipping public holiday: {SkipDate:yyyy-MM-dd} ({DayOfWeek}) {HolidayName}", nextRunTime, nextRunTime.DayOfWeek, holidayName);
+                    break;
                 }
-                else
-                {
-                    _logger.LogTrace("Skipping weekend: {SkipDate:yyyy-MM-dd} ({DayOfWeek})", nextRunTime, nextRunTime.DayOfWeek);
-                }
+
+                string reason = isWeekend ? "Weekend" : "Public Holiday";
+                _logger.LogTrace("Skipping date {SkipDate:yyyy-MM-dd} ({DayOfWeek}) - Reason: {Reason}", nextRunTime, nextRunTime.DayOfWeek, reason);
 
                 nextRunTime = nextRunTime.AddDays(1);
             }
 
             TimeSpan delay = nextRunTime - now;
-            if (delay < TimeSpan.Zero) { delay = TimeSpan.FromMinutes(1); _logger.LogWarning("Calculated negative delay after checks, using fallback."); }
-            _logger.LogInformation("Scheduling next sign-in message check for: {RunTime} (in {Delay})", nextRunTime, delay);
+
+            if (delay < TimeSpan.Zero)
+            {
+                _logger.LogWarning("Calculated negative delay ({Delay}). Running check in 10 seconds.", delay);
+                delay = TimeSpan.FromSeconds(10);
+            }
+
+
+            _logger.LogInformation("Scheduling next sign-in message check for: {RunTime:yyyy-MM-dd HH:mm:ss} (Local Time) (in {Delay})", nextRunTime, delay);
 
             _timer?.Dispose();
-            _timer = new System.Threading.Timer(
-               callback: async _ => await TimerTickAsync(),
-               state: null,
-               dueTime: delay,
-               period: Timeout.InfiniteTimeSpan);
+            _timer = new System.Threading.Timer(async _ => await TimerTickAsync(), null, delay, Timeout.InfiniteTimeSpan);
         }
+
 
         private async Task TimerTickAsync()
         {
             _logger.LogDebug("Timer triggered for daily message check.");
             try
             {
-                if (_client.ConnectionState == ConnectionState.Connected) { await _notificationService.SendDailySignInAsync(); }
-                else { _logger.LogWarning("Timer ticked but client was not connected. Skipping send."); }
+                if (_client.ConnectionState == ConnectionState.Connected)
+                {
+                    DateTime now = DateTime.Now;
+                    bool isWeekend = now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday;
+                    bool isHoliday = _norwayCalendar.IsPublicHoliday(now);
+
+                    if (!isWeekend && !isHoliday)
+                    {
+                        await _notificationService.SendDailySignInAsync();
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Timer ticked, but today ({Date}) is a weekend or holiday. Skipping message send.", now.ToString("yyyy-MM-dd"));
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Timer ticked but Discord client was not connected. Skipping message send.");
+                }
             }
-            catch (Exception ex) { _logger.LogError(ex, "Error executing scheduled task via NotificationService."); }
-            finally { ScheduleNextSignInMessage(); }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing scheduled task (TimerTickAsync) via NotificationService.");
+            }
+            finally
+            {
+                ScheduleNextSignInMessage();
+            }
         }
+
+        private async Task HandleStageStartedAsync(SocketStageChannel stageChannel, SocketStageChannel _)
+        {
+            _logger.LogWarning(">>>> HandleStageStartedAsync ENTERED for StageChannelId: {StageChannelId}", stageChannel.Id);
+
+            _logger.LogInformation("Stage updated/started in channel {ChannelId} ({ChannelName}) topic: {Topic}",
+               stageChannel.Id, stageChannel.Name ?? "N/A", stageChannel.Topic ?? "(Ingen tittel)");
+
+            if (stageChannel.Guild == null)
+            {
+                _logger.LogWarning("HandleStageStartedAsync received event for StageChannelId {StageChannelId} without Guild context.", stageChannel.Id);
+                return;
+            }
+
+
+            StageNotificationSetting? config = null;
+            try
+            {
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
+                    config = await dbContext.StageNotificationConfigs
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync(c => c.StageChannelId == stageChannel.Id && c.GuildId == stageChannel.Guild.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to query StageNotificationConfigs from database for StageChannelId {StageChannelId} in Guild {GuildId}",
+                   stageChannel.Id, stageChannel.Guild.Id);
+                return;
+            }
+
+            if (config == null)
+            {
+                _logger.LogDebug("No notification config found in database for Stage Channel {ChannelId} in Guild {GuildId}", stageChannel.Id, stageChannel.Guild.Id);
+                return;
+            }
+
+            var guild = stageChannel.Guild;
+
+            var notificationRole = guild.GetRole(config.NotificationRoleId);
+            if (notificationRole == null)
+            {
+                _logger.LogWarning("Notification Role {RoleId} (from DB config for Stage {StageId}) not found in Guild {GuildId}",
+                    config.NotificationRoleId, config.StageChannelId, guild.Id);
+                return;
+            }
+
+            ulong notificationChannelId = config.NotificationChannelId ?? 0;
+            if (notificationChannelId == 0)
+            {
+                // Use settings from IOptions
+                var currentSettings = _settingsOptions.Value;
+                if (!ulong.TryParse(currentSettings.TargetChannelId, out notificationChannelId) || notificationChannelId == 0)
+                {
+                    _logger.LogError("NotificationChannelId is not set for Stage {StageChannelId} config and global TargetChannelId is invalid or missing: {GlobalTargetId}",
+                        config.StageChannelId, currentSettings.TargetChannelId);
+                    return;
+                }
+                _logger.LogDebug("NotificationChannelId not set for Stage {StageChannelId}, falling back to global TargetChannelId {GlobalTargetId}", config.StageChannelId, notificationChannelId);
+            }
+
+
+            ITextChannel? targetChannel = await _client.GetChannelAsync(notificationChannelId) as ITextChannel;
+            if (targetChannel == null)
+            {
+                _logger.LogWarning("Notification Channel {ChannelId} (from DB config for Stage {StageId}) not found or not a text channel.",
+                    notificationChannelId, config.StageChannelId);
+                return;
+            }
+
+            var stageChannelMention = $"<#{stageChannel.Id}>";
+            string sanitizedTopic = SanitizeForMention(stageChannel.Topic);
+            string message;
+
+            if (!string.IsNullOrWhiteSpace(config.CustomMessage))
+            {
+                message = config.CustomMessage
+                    .Replace("{roleMention}", notificationRole.Mention)
+                    .Replace("{stageTopic}", sanitizedTopic)
+                    .Replace("{stageChannelMention}", stageChannelMention);
+            }
+            else
+            {
+                message = $"{notificationRole.Mention} {(string.IsNullOrWhiteSpace(sanitizedTopic) || sanitizedTopic == "(Ingen Tittel)" ? "En klasse" : $"Klassen '{sanitizedTopic}'")} starter nå i {stageChannelMention}!";
+            }
+
+            try
+            {
+                var botUser = guild.CurrentUser;
+                if (botUser == null)
+                {
+                    _logger.LogError("Could not get bot's own user object (CurrentUser) in guild {GuildId}", guild.Id);
+                    return;
+                }
+
+                var permissions = botUser.GetPermissions(targetChannel);
+
+                if (!permissions.ViewChannel)
+                {
+                    _logger.LogWarning("Bot lacks ViewChannel permission for notification channel {ChannelId} ({ChannelName})", targetChannel.Id, targetChannel.Name);
+                    return;
+                }
+                if (!permissions.SendMessages)
+                {
+                    _logger.LogWarning("Bot lacks SendMessages permission for notification channel {ChannelId} ({ChannelName})", targetChannel.Id, targetChannel.Name);
+                    return;
+                }
+                if (!permissions.MentionEveryone)
+                {
+                    _logger.LogWarning("Bot lacks MentionEveryone permission for notification channel {ChannelId} ({ChannelName})", targetChannel.Id, targetChannel.Name);
+                    return;
+                }
+
+
+                await targetChannel.SendMessageAsync(message, allowedMentions: new AllowedMentions { RoleIds = new List<ulong> { notificationRole.Id } });
+                _logger.LogInformation("Sent stage start notification for Role '{RoleName}' to Channel '{ChannelName}'", notificationRole.Name, targetChannel.Name);
+            }
+            catch (Discord.Net.HttpException httpEx)
+            {
+                _logger.LogError(httpEx, "Discord API error sending stage notification to {ChannelId}. Code: {ErrorCode}, Reason: {Reason}", targetChannel.Id, httpEx.HttpCode, httpEx.Reason);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send stage start notification for Role {RoleId} to Channel {ChannelId}", config.NotificationRoleId, notificationChannelId);
+            }
+        }
+
+        private string SanitizeForMention(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return "(Ingen Tittel)";
+            return input.Replace("@", "@\u200B").Replace("<#", "<#\u200B").Replace("<@", "<@\u200B");
+        }
+
 
         private Task LogAsync(LogMessage log)
         {
@@ -269,6 +536,7 @@ namespace MorningSignInBot
                 LogSeverity.Debug => LogLevel.Debug,
                 _ => LogLevel.Information
             };
+
             _logger.Log(severity, log.Exception, "[Discord {Source}] {Message}", log.Source, log.Message);
             return Task.CompletedTask;
         }

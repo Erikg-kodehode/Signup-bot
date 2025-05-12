@@ -40,7 +40,7 @@ namespace MorningSignInBot.Services
         }
 
         // --- New Method: Delete Previous Message ---
-        private async Task DeletePreviousMessageAsync()
+        public async Task DeletePreviousMessageAsync()
         {
             if (!File.Exists(_stateFilePath))
             {

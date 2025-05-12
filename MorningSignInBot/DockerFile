@@ -2,46 +2,29 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /source
 
-# Copy csproj and restore dependencies first (layer caching)
 COPY *.csproj .
 RUN dotnet restore
 
-# Copy the rest of the application code
 COPY . .
-
-# Publish the application
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # --- Final Runtime Stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Create non-root user for security
-RUN adduser --disabled-password --gecos "" --home "/app" --shell "/bin/bash" --uid 1000 appuser && \
+# Create non-root user
+RUN addgroup --system --gid 1000 appgroup && \
+    adduser --system --disabled-password --gecos "" --home "/app" --ingroup appgroup --shell "/bin/bash" --uid 1000 appuser && \
     mkdir -p /app/data /app/logs && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appgroup /app
 
-# Copy the published output from the build stage
+# Copy published output
 COPY --from=build /app/publish .
-COPY --from=build /app/publish/appsettings.*.json /app/
-
-# Set ownership for the application files
-RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
 
-# Set environment variables
-ENV DOTNET_ENVIRONMENT=Production \
-    ASPNETCORE_URLS=http://+:80 \
-    TZ=Europe/Oslo
+# Set timezone (can also be set via docker-compose)
+ENV TZ=Europe/Oslo
 
-# Expose volume mount points
-VOLUME ["/app/data", "/app/logs"]
-
-# Define the entry point
 ENTRYPOINT ["dotnet", "MorningSignInBot.dll"]
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD dotnet --info || exit 1
