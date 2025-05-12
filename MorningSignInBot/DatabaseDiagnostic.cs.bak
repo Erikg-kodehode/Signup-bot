@@ -1,0 +1,58 @@
+using Microsoft.EntityFrameworkCore;
+using MorningSignInBot.Utilities;
+using System;
+using System.Threading.Tasks;
+
+namespace MorningSignInBot
+{
+    // This class serves as a standalone entry point for the diagnostic tool
+    // It should be able to run independently from the main application
+    public class DatabaseDiagnostic
+    {
+        // Main entry point for the diagnostic tool when run as a standalone application
+        static async Task Main(string[] args)
+        {
+            Console.WriteLine("MorningSignInBot Database Diagnostic Tool");
+            Console.WriteLine("=========================================");
+            
+            string? dbPath = null;
+            
+            // Check if a database path was provided as an argument
+            if (args.Length > 0)
+            {
+                dbPath = args[0];
+                Console.WriteLine($"Using specified database: {dbPath}");
+            }
+            else
+            {
+                Console.WriteLine("Using default database path");
+            }
+            
+            await DatabaseDiagnostics.RunDiagnostics(dbPath);
+            
+            Console.WriteLine("\nDiagnostic complete. Press any key to exit...");
+            Console.ReadKey();
+        }
+        
+        // Add a public method to run diagnostics that can be called from other parts
+        // of the application without creating an entry point conflict
+        public static async Task RunDatabaseDiagnostic(string? dbPath = null)
+        {
+            Console.WriteLine("MorningSignInBot Database Diagnostic Tool");
+            Console.WriteLine("=========================================");
+            
+            if (dbPath != null)
+            {
+                Console.WriteLine($"Using specified database: {dbPath}");
+            }
+            else
+            {
+                Console.WriteLine("Using default database path");
+            }
+            
+            await DatabaseDiagnostics.RunDiagnostics(dbPath);
+            
+            Console.WriteLine("\nDiagnostic complete.");
+        }
+    }
+}

@@ -134,9 +134,7 @@ namespace MorningSignInBot
                         var discordConfig = new DiscordSocketConfig
                         {
                             GatewayIntents = GatewayIntents.Guilds
-                                       | GatewayIntents.GuildMessages
-                                       | GatewayIntents.GuildMembers
-                                       | GatewayIntents.MessageContent,
+                                       | GatewayIntents.GuildMembers,
                             LogLevel = LogSeverity.Info
                         };
                         services.AddSingleton(discordConfig);

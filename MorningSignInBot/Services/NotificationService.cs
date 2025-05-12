@@ -172,12 +172,41 @@ namespace MorningSignInBot.Services
                 if (channel is not ITextChannel targetChannel)
                 { _logger.LogError("Target channel {ChannelId} not found or is not a text channel.", channelId); return; }
 
-                var buttonKontor = new ButtonBuilder().WithLabel("Logg inn (Kontor)").WithCustomId(SignInButtonKontorId).WithStyle(ButtonStyle.Success).WithEmote(Emoji.Parse("\U0001F3E2"));
-                var buttonHjemme = new ButtonBuilder().WithLabel("Logg inn (Hjemmekontor)").WithCustomId(SignInButtonHjemmeId).WithStyle(ButtonStyle.Primary).WithEmote(Emoji.Parse("\U0001F3E0"));
-                var component = new ComponentBuilder().WithButton(buttonKontor).WithButton(buttonHjemme).Build();
-                string messageText = $"<@&{_settings.Guilds[0].AdminRoleId}> God morgen! Vennligst logg inn for **{DateTime.Now:dddd, d. MMMM}** ved å bruke en av knappene under.";
+                // Create improved buttons with better visual styling
+                var buttonKontor = new ButtonBuilder()
+                    .WithLabel("Logg inn (Kontor)")
+                    .WithCustomId(SignInButtonKontorId)
+                    .WithStyle(ButtonStyle.Success)
+                    .WithEmote(Emoji.Parse("🏢")); // Office building emoji
 
-                sentMessage = await targetChannel.SendMessageAsync(text: messageText, components: component);
+                var buttonHjemme = new ButtonBuilder()
+                    .WithLabel("Logg inn (Hjemmekontor)")
+                    .WithCustomId(SignInButtonHjemmeId)
+                    .WithStyle(ButtonStyle.Primary)
+                    .WithEmote(Emoji.Parse("🏡")); // Home emoji
+
+                var component = new ComponentBuilder()
+                    .WithButton(buttonKontor)
+                    .WithButton(buttonHjemme)
+                    .Build();
+
+                // Create an appealing embed for the message
+                var currentDate = DateTime.Now;
+                var embed = new EmbedBuilder()
+                    .WithTitle($"📋 Daglig Innsjekking: {currentDate:dddd, d. MMMM yyyy}")
+                    .WithDescription("**God morgen!** 👋\n\nVennligst logg inn for dagens arbeidsdag ved å bruke en av knappene nedenfor.")
+                    .WithColor(new Color(52, 152, 219)) // Nice blue color
+                    .WithFooter(footer => {
+                        footer.Text = "Innsjekking registreres automatisk i systemet";
+                        footer.IconUrl = "https://cdn.discordapp.com/emojis/1042377292536643655.png"; // You can use your own icon URL here
+                    })
+                    .WithTimestamp(DateTimeOffset.Now);
+
+                // Send message with embed and buttons
+                sentMessage = await targetChannel.SendMessageAsync(
+                    text: null, // No text content (using embed instead)
+                    embed: embed.Build(),
+                    components: component);
 
                 if (sentMessage != null)
                 {

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using MorningSignInBot.Configuration;
 using System; // Keep essential usings
 using System.IO;
 
@@ -9,7 +8,6 @@ namespace MorningSignInBot.Data
     {
         // --- Ensure BOTH DbSets are present and uncommented ---
         public DbSet<SignInEntry> SignIns { get; set; }
-        public DbSet<StageNotificationSetting> StageNotificationConfigs { get; set; }
         // -----------------------------------------------------
 
         // Primary constructor for DI and EF Core tools
@@ -24,12 +22,6 @@ namespace MorningSignInBot.Data
             {
                 entity.HasIndex(e => e.Timestamp);
                 entity.HasIndex(e => e.UserId);
-            });
-
-
-            modelBuilder.Entity<StageNotificationSetting>(entity =>
-            {
-                entity.HasIndex(e => e.GuildId);
             });
             // -----------------------------------------------------------------------
         }

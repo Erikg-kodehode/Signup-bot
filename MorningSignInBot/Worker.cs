@@ -88,7 +88,6 @@ namespace MorningSignInBot
             _client.Log += LogAsync;
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
-            _client.StageUpdated += HandleStageStartedAsync;
 
             // First, try to get token from Docker secret
             string? botToken = await TryReadDockerSecretAsync();
@@ -175,7 +174,6 @@ namespace MorningSignInBot
                 _client.Log -= LogAsync;
                 _client.Ready -= OnReadyAsync;
                 _client.InteractionCreated -= HandleInteractionAsync;
-                _client.StageUpdated -= HandleStageStartedAsync;
 
                 try { await _client.StopAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client stop."); }
                 try { await _client.LogoutAsync(); } catch (Exception ex) { _logger.LogWarning(ex, "Exception during client logout."); }
@@ -417,139 +415,6 @@ namespace MorningSignInBot
             }
         }
 
-        private async Task HandleStageStartedAsync(SocketStageChannel stageChannel, SocketStageChannel _)
-        {
-            _logger.LogWarning(">>>> HandleStageStartedAsync ENTERED for StageChannelId: {StageChannelId}", stageChannel.Id);
-
-            _logger.LogInformation("Stage updated/started in channel {ChannelId} ({ChannelName}) topic: {Topic}",
-               stageChannel.Id, stageChannel.Name ?? "N/A", stageChannel.Topic ?? "(Ingen tittel)");
-
-            if (stageChannel.Guild == null)
-            {
-                _logger.LogWarning("HandleStageStartedAsync received event for StageChannelId {StageChannelId} without Guild context.", stageChannel.Id);
-                return;
-            }
-
-
-            StageNotificationSetting? config = null;
-            try
-            {
-                using (var scope = _scopeFactory.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
-                    config = await dbContext.StageNotificationConfigs
-                                        .AsNoTracking()
-                                        .FirstOrDefaultAsync(c => c.StageChannelId == stageChannel.Id && c.GuildId == stageChannel.Guild.Id);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to query StageNotificationConfigs from database for StageChannelId {StageChannelId} in Guild {GuildId}",
-                   stageChannel.Id, stageChannel.Guild.Id);
-                return;
-            }
-
-            if (config == null)
-            {
-                _logger.LogDebug("No notification config found in database for Stage Channel {ChannelId} in Guild {GuildId}", stageChannel.Id, stageChannel.Guild.Id);
-                return;
-            }
-
-            var guild = stageChannel.Guild;
-
-            var notificationRole = guild.GetRole(config.NotificationRoleId);
-            if (notificationRole == null)
-            {
-                _logger.LogWarning("Notification Role {RoleId} (from DB config for Stage {StageId}) not found in Guild {GuildId}",
-                    config.NotificationRoleId, config.StageChannelId, guild.Id);
-                return;
-            }
-
-            ulong notificationChannelId = config.NotificationChannelId ?? 0;
-            if (notificationChannelId == 0)
-            {
-                // Use settings from IOptions
-                var currentSettings = _settingsOptions.Value;
-                if (!ulong.TryParse(currentSettings.TargetChannelId, out notificationChannelId) || notificationChannelId == 0)
-                {
-                    _logger.LogError("NotificationChannelId is not set for Stage {StageChannelId} config and global TargetChannelId is invalid or missing: {GlobalTargetId}",
-                        config.StageChannelId, currentSettings.TargetChannelId);
-                    return;
-                }
-                _logger.LogDebug("NotificationChannelId not set for Stage {StageChannelId}, falling back to global TargetChannelId {GlobalTargetId}", config.StageChannelId, notificationChannelId);
-            }
-
-
-            ITextChannel? targetChannel = await _client.GetChannelAsync(notificationChannelId) as ITextChannel;
-            if (targetChannel == null)
-            {
-                _logger.LogWarning("Notification Channel {ChannelId} (from DB config for Stage {StageId}) not found or not a text channel.",
-                    notificationChannelId, config.StageChannelId);
-                return;
-            }
-
-            var stageChannelMention = $"<#{stageChannel.Id}>";
-            string sanitizedTopic = SanitizeForMention(stageChannel.Topic);
-            string message;
-
-            if (!string.IsNullOrWhiteSpace(config.CustomMessage))
-            {
-                message = config.CustomMessage
-                    .Replace("{roleMention}", notificationRole.Mention)
-                    .Replace("{stageTopic}", sanitizedTopic)
-                    .Replace("{stageChannelMention}", stageChannelMention);
-            }
-            else
-            {
-                message = $"{notificationRole.Mention} {(string.IsNullOrWhiteSpace(sanitizedTopic) || sanitizedTopic == "(Ingen Tittel)" ? "En klasse" : $"Klassen '{sanitizedTopic}'")} starter nå i {stageChannelMention}!";
-            }
-
-            try
-            {
-                var botUser = guild.CurrentUser;
-                if (botUser == null)
-                {
-                    _logger.LogError("Could not get bot's own user object (CurrentUser) in guild {GuildId}", guild.Id);
-                    return;
-                }
-
-                var permissions = botUser.GetPermissions(targetChannel);
-
-                if (!permissions.ViewChannel)
-                {
-                    _logger.LogWarning("Bot lacks ViewChannel permission for notification channel {ChannelId} ({ChannelName})", targetChannel.Id, targetChannel.Name);
-                    return;
-                }
-                if (!permissions.SendMessages)
-                {
-                    _logger.LogWarning("Bot lacks SendMessages permission for notification channel {ChannelId} ({ChannelName})", targetChannel.Id, targetChannel.Name);
-                    return;
-                }
-                if (!permissions.MentionEveryone)
-                {
-                    _logger.LogWarning("Bot lacks MentionEveryone permission for notification channel {ChannelId} ({ChannelName})", targetChannel.Id, targetChannel.Name);
-                    return;
-                }
-
-
-                await targetChannel.SendMessageAsync(message, allowedMentions: new AllowedMentions { RoleIds = new List<ulong> { notificationRole.Id } });
-                _logger.LogInformation("Sent stage start notification for Role '{RoleName}' to Channel '{ChannelName}'", notificationRole.Name, targetChannel.Name);
-            }
-            catch (Discord.Net.HttpException httpEx)
-            {
-                _logger.LogError(httpEx, "Discord API error sending stage notification to {ChannelId}. Code: {ErrorCode}, Reason: {Reason}", targetChannel.Id, httpEx.HttpCode, httpEx.Reason);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send stage start notification for Role {RoleId} to Channel {ChannelId}", config.NotificationRoleId, notificationChannelId);
-            }
-        }
-
-        private string SanitizeForMention(string? input)
-        {
-            if (string.IsNullOrWhiteSpace(input)) return "(Ingen Tittel)";
-            return input.Replace("@", "@\u200B").Replace("<#", "<#\u200B").Replace("<@", "<@\u200B");
-        }
 
 
         private Task LogAsync(LogMessage log)

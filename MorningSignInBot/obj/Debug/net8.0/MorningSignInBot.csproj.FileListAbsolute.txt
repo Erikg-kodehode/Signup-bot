@@ -265,3 +265,5 @@ C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBOt\obj\Debug\net8.0\refint
 C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBOt\obj\Debug\net8.0\MorningSignInBot.pdb
 C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBOt\obj\Debug\net8.0\MorningSignInBot.genruntimeconfig.cache
 C:\Users\erikg\Documents\Dev\Signup bot\morningSigninBOt\obj\Debug\net8.0\ref\MorningSignInBot.dll
+C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\bin\Debug\net8.0\DatabaseDiagnosticTool\obj\DatabaseDiagnosticTool.csproj.nuget.dgspec.json
+C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot\bin\Debug\net8.0\DatabaseDiagnosticTool\obj\project.assets.json

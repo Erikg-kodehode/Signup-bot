@@ -1,4 +1,6 @@
-﻿version: '3.8'
+# docker-compose.override.yml
+version: '3.8'
+
 services:
   signin-bot:
     environment:
@@ -7,17 +9,15 @@ services:
       - Discord__Guilds__0__AdminRoleId=1364526514665816084
       - Discord__Guilds__0__GuildName=Erik Discord
       - Logging__LogLevel__Default=Debug
-      - Logging__LogLevel__Discord=Trace
-      - Logging__LogLevel__Discord.Net.WebSocket=Trace
-      - Logging__LogLevel__Discord.Net.WebSocket.DiscordSocketClient=Trace
-      - Logging__LogLevel__Discord.Net.Rest=Trace
-      - Logging__LogLevel__Discord.Net.Gateway=Trace
-      - Logging__LogLevel__MorningSignInBot=Trace
-      - DOTNET_ENVIRONMENT=Development
+      - Logging__LogLevel__Discord=Debug
+      - Logging__LogLevel__Discord.Net=Debug
+      - Logging__LogLevel__MorningSignInBot=Debug
+      - Database__Path=/app/data/signins.db
     volumes:
       - C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot/appsettings.json:/app/appsettings.json:ro
-      - bot-data:/app/data
-      - bot-logs:/app/logs
+      - C:\Users\erikg\Documents\Dev\Signup bot\MorningSignInBot/data:/app/data:rw
+      - bot-logs:/app/logs:rw
+    user: "1000:1000"
+
 volumes:
-  bot-data:
   bot-logs:
