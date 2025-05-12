@@ -19,6 +19,9 @@ namespace MorningSignInBot.Configuration
 
         [Required]
         public ulong GuildId { get; set; }
+        
+        // Indicates if this role is manually overridden or should be auto-detected
+        public bool IsRoleOverrideEnabled { get; set; } = false;
     }
 
     public class GuildConfiguration

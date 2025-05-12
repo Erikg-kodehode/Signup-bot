@@ -24,7 +24,9 @@ services:
         delay: 10s
         order: start-first
     secrets:
-      - discord_bot_token
+      - source: discord_bot_token
+        target: discord_bot_token
+        mode: 0444
     # For development only - comment out in production
     stdin_open: true # Keep STDIN open for Console.ReadLine()
     tty: true        # Allocate a pseudo-TTY
@@ -39,6 +41,10 @@ services:
       - Discord__Guilds__0__GuildName=${DISCORD_GUILD_NAME:-Your Server Name}
       - Discord__SignInHour=${SIGNIN_HOUR:-8}
       - Discord__SignInMinute=${SIGNIN_MINUTE:-0}
+      # Logging configuration
+      - Logging__LogLevel__Default=${Logging__LogLevel__Default:-Information}
+      - Logging__LogLevel__MorningSignInBot=${Logging__LogLevel__MorningSignInBot:-Information}
+      - Logging__LogLevel__Microsoft=${Logging__LogLevel__Microsoft:-Warning}
     volumes:
       - type: volume
         source: bot-data

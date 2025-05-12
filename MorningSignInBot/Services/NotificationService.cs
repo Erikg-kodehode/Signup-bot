@@ -1,16 +1,15 @@
-using Discord;
+﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MorningSignInBot.Configuration;
 using System;
-using System.IO; // Required for file operations
-using System.Text.Json; // Required for JSON
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MorningSignInBot.Services
 {
-    // Simple class to hold the state we need to save
     internal class BotState
     {
         public ulong LastMessageId { get; set; }
@@ -22,7 +21,7 @@ namespace MorningSignInBot.Services
         private readonly ILogger<NotificationService> _logger;
         private readonly DiscordSocketClient _client;
         private readonly DiscordSettings _settings;
-        private readonly string _stateFilePath; // Path to save the last message ID
+        private readonly string _stateFilePath;
 
         private const string SignInButtonKontorId = "daily_signin_kontor";
         private const string SignInButtonHjemmeId = "daily_signin_hjemme";
@@ -35,67 +34,97 @@ namespace MorningSignInBot.Services
             _logger = logger;
             _client = client;
             _settings = settings.Value;
-            // Store state file in the application's base directory
             _stateFilePath = Path.Combine(AppContext.BaseDirectory, "bot_message_state.json");
         }
 
-        // --- New Method: Delete Previous Message ---
         public async Task DeletePreviousMessageAsync()
         {
+            _logger.LogDebug("Starting DeletePreviousMessageAsync...");
+            
             if (!File.Exists(_stateFilePath))
             {
-                _logger.LogInformation("State file not found, no previous message to delete.");
+                _logger.LogInformation("State file not found at path: {Path}", _stateFilePath);
                 return;
             }
 
             try
             {
+                _logger.LogDebug("Reading state file from: {Path}", _stateFilePath);
                 string json = await File.ReadAllTextAsync(_stateFilePath);
                 BotState? previousState = JsonSerializer.Deserialize<BotState>(json);
 
                 if (previousState?.LastMessageId > 0 && previousState?.LastChannelId > 0)
                 {
-                    _logger.LogInformation("Attempting to delete previous message {MessageId} in channel {ChannelId}", previousState.LastMessageId, previousState.LastChannelId);
+                    _logger.LogInformation("Found previous message state - MessageId: {MessageId}, ChannelId: {ChannelId}", 
+                        previousState.LastMessageId, previousState.LastChannelId);
 
-                    if (await _client.GetChannelAsync(previousState.LastChannelId) is ITextChannel channel)
+                    var channel = await _client.GetChannelAsync(previousState.LastChannelId) as ITextChannel;
+                    if (channel == null)
                     {
-                        // Get the message - optional, can just try deleting
-                        // IMessage? messageToDelete = await channel.GetMessageAsync(previousState.LastMessageId);
-                        // if (messageToDelete != null) { ... }
-
-                        // Attempt deletion directly
-                        await channel.DeleteMessageAsync(previousState.LastMessageId);
-                        _logger.LogInformation("Successfully deleted previous message {MessageId}", previousState.LastMessageId);
-
-                        // Optionally delete the state file after successful deletion,
-                        // or just let it be overwritten when the new message is sent.
-                        // File.Delete(_stateFilePath);
+                        _logger.LogWarning("Could not find channel {ChannelId} or it is not a text channel.", previousState.LastChannelId);
+                        return;
                     }
-                    else
+
+                    // Check bot permissions
+                    var botUser = await channel.Guild.GetCurrentUserAsync();
+                    var permissions = botUser.GetPermissions(channel);
+                    
+                    if (!permissions.ManageMessages)
                     {
-                        _logger.LogWarning("Could not find channel {ChannelId} to delete previous message.", previousState.LastChannelId);
+                        _logger.LogError("Bot lacks ManageMessages permission in channel {ChannelName} ({ChannelId})", 
+                            channel.Name, channel.Id);
+                        return;
+                    }
+
+                    try
+                    {
+                        // First try to fetch the message to confirm it exists
+                        var messageToDelete = await channel.GetMessageAsync(previousState.LastMessageId);
+                        if (messageToDelete == null)
+                        {
+                            _logger.LogWarning("Message {MessageId} no longer exists in channel {ChannelName}", 
+                                previousState.LastMessageId, channel.Name);
+                            File.Delete(_stateFilePath);
+                            return;
+                        }
+
+                        // Attempt deletion
+                        await channel.DeleteMessageAsync(previousState.LastMessageId);
+                        _logger.LogInformation("Successfully deleted message {MessageId} from channel {ChannelName}", 
+                            previousState.LastMessageId, channel.Name);
+
+                        // Delete the state file since we succeeded
+                        File.Delete(_stateFilePath);
+                    }
+                    catch (Discord.Net.HttpException discordEx)
+                    {
+                        _logger.LogError(discordEx, "Discord API error deleting message {MessageId}. Status: {Status}, Code: {Code}, Reason: {Reason}", 
+                            previousState.LastMessageId, discordEx.HttpCode, discordEx.DiscordCode, discordEx.Reason);
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("State file did not contain valid previous message/channel IDs.");
+                    _logger.LogWarning("Invalid state file content: {Content}", json);
+                    File.Delete(_stateFilePath);
                 }
             }
             catch (Discord.Net.HttpException discordEx) when (discordEx.HttpCode == System.Net.HttpStatusCode.NotFound)
             {
-                _logger.LogWarning("Previous message was likely already deleted (404 Not Found).");
-                // Optionally delete the state file here too if message is gone
-                // try { File.Delete(_stateFilePath); } catch { }
+                _logger.LogWarning("Previous message was already deleted (404 Not Found).");
+                File.Delete(_stateFilePath);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reading state file or deleting previous message.");
-                // Don't delete state file on error, maybe we can retry next time
+                _logger.LogError(ex, "Unexpected error in DeletePreviousMessageAsync");
+                // Leave state file for retry unless its corrupted
+                if (ex is JsonException || ex is FileNotFoundException)
+                {
+                    try { File.Delete(_stateFilePath); } 
+                    catch { /* ignore cleanup errors */ }
+                }
             }
-            // We always proceed to send the new message regardless of deletion success/failure
         }
 
-        // --- New Method: Save Message State ---
         private async Task SaveMessageStateAsync(IMessage message)
         {
             if (message == null) return;
@@ -118,12 +147,9 @@ namespace MorningSignInBot.Services
             }
         }
 
-        // --- Modified Method: SendDailySignInAsync ---
         public async Task SendDailySignInAsync()
         {
-            // --- Attempt to delete previous day's message FIRST ---
             await DeletePreviousMessageAsync();
-            // --------------------------------------------------------
 
             _logger.LogDebug("Attempting to send daily sign-in message...");
 
@@ -133,7 +159,7 @@ namespace MorningSignInBot.Services
                 return;
             }
 
-            IMessage? sentMessage = null; // Keep track of the sent message
+            IMessage? sentMessage = null;
             try
             {
                 if (!ulong.TryParse(_settings.TargetChannelId, out ulong channelId))
@@ -146,19 +172,17 @@ namespace MorningSignInBot.Services
                 if (channel is not ITextChannel targetChannel)
                 { _logger.LogError("Target channel {ChannelId} not found or is not a text channel.", channelId); return; }
 
-                var buttonKontor = new ButtonBuilder().WithLabel("Logg inn (Kontor)").WithCustomId(SignInButtonKontorId).WithStyle(ButtonStyle.Success).WithEmote(Emoji.Parse("🏢"));
-                var buttonHjemme = new ButtonBuilder().WithLabel("Logg inn (Hjemmekontor)").WithCustomId(SignInButtonHjemmeId).WithStyle(ButtonStyle.Primary).WithEmote(Emoji.Parse("🏠"));
+                var buttonKontor = new ButtonBuilder().WithLabel("Logg inn (Kontor)").WithCustomId(SignInButtonKontorId).WithStyle(ButtonStyle.Success).WithEmote(Emoji.Parse("\U0001F3E2"));
+                var buttonHjemme = new ButtonBuilder().WithLabel("Logg inn (Hjemmekontor)").WithCustomId(SignInButtonHjemmeId).WithStyle(ButtonStyle.Primary).WithEmote(Emoji.Parse("\U0001F3E0"));
                 var component = new ComponentBuilder().WithButton(buttonKontor).WithButton(buttonHjemme).Build();
-                string messageText = $"God morgen! Vennligst logg inn for **{DateTime.Now:dddd, d. MMMM}** ved å bruke en av knappene under.";
+                string messageText = $"<@&{_settings.Guilds[0].AdminRoleId}> God morgen! Vennligst logg inn for **{DateTime.Now:dddd, d. MMMM}** ved å bruke en av knappene under.";
 
-                sentMessage = await targetChannel.SendMessageAsync(text: messageText, components: component); // Assign to variable
+                sentMessage = await targetChannel.SendMessageAsync(text: messageText, components: component);
 
                 if (sentMessage != null)
                 {
                     _logger.LogInformation("Sign-in message sent successfully to channel {ChannelId} with ID {MessageId}", channelId, sentMessage.Id);
-                    // --- Save the state of the NEWLY sent message ---
                     await SaveMessageStateAsync(sentMessage);
-                    // -------------------------------------------------
                 }
                 else { _logger.LogWarning("Failed to send message to channel {ChannelId}. SendMessageAsync returned null.", channelId); }
             }

@@ -12,14 +12,43 @@ RUN dotnet publish -c Release -o /app/publish --no-restore
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
+# Install debugging tools while keeping the image as small as possible
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        procps \
+        iproute2 \
+        curl \
+        nano \
+        ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
 RUN addgroup --system --gid 1000 appgroup && \
     adduser --system --disabled-password --gecos "" --home "/app" --ingroup appgroup --shell "/bin/bash" --uid 1000 appuser && \
-    mkdir -p /app/data /app/logs && \
+    mkdir -p /app/data /app/logs /app/cores && \
     chown -R appuser:appgroup /app
 
 # Copy published output
 COPY --from=build /app/publish .
+
+# Create directories and set proper ownership
+RUN mkdir -p /app/data /app/logs /app/cores && \
+    chown -R appuser:appgroup /app && \
+    chmod -R 755 /app/data /app/logs && \
+    chmod 644 /app/appsettings*.json && \
+    # Set core pattern to save to a specific directory
+    echo "/app/cores/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern || true && \
+    # Enable core dumps
+    echo "kernel.core_pattern=/app/cores/core.%e.%p.%h.%t" >> /etc/sysctl.conf && \
+    echo "fs.suid_dumpable=2" >> /etc/sysctl.conf
+
+# Configure core dumps for the application
+ENV DOTNET_EnableCrashDumps=1
+ENV DOTNET_DbgEnableMiniDump=1
+ENV DOTNET_CreateDumpDiagnostics=1
+ENV COMPlus_DbgEnableMiniDump=1
+ENV COMPlus_EnableDiagnostics=1
 
 # Switch to non-root user
 USER appuser

@@ -135,7 +135,35 @@ namespace MorningSignInBot
         // --- ExecuteAsync, StopAsync, OnReadyAsync, HandleInteractionAsync, HandleSignInButton ---
         // --- ScheduleNextSignInMessage, TimerTickAsync, HandleStageStartedAsync, SanitizeForMention, LogAsync ---
         // (Keep all other methods as they were in the previous corrected versions)
-        protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.LogInformation("Worker service is running. Discord client state: {State}", _client.ConnectionState);
+            Console.WriteLine($"---> Worker service is running. Discord client state: {_client.ConnectionState}");
+
+            // Report Discord client state periodically
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    _logger.LogDebug("Worker running. Discord client state: {State}", _client.ConnectionState);
+                    Console.WriteLine($"---> Worker running. Discord client state: {_client.ConnectionState} at {DateTime.Now.ToString("HH:mm:ss")}");
+                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Graceful exit on cancellation
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error in worker execution loop");
+                    Console.WriteLine($"---> ERROR in worker execution loop: {ex.Message}");
+                }
+            }
+
+            _logger.LogInformation("Worker service is stopping");
+            Console.WriteLine("---> Worker service is stopping");
+        }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {

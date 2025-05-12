@@ -204,11 +204,11 @@ namespace MorningSignInBot.Interactions
                 _logger = logger;
             }
 
-            [SlashCommand("add", "Legg til en ny varsling for en stage-kanal.")]
-            public async Task AddStageNotification(
-                [Summary("stage_kanal", "Stage-kanalen som skal overvåkes.")] IStageChannel stageChannel,
-                [Summary("rolle", "Rollen som skal nevnes.")] IRole roleToMention,
-                [Summary("varslings_kanal", "Tekstkanalen der varselet skal postes.")] ITextChannel notificationChannel,
+            [SlashCommand("setup", "Konfigurer varsling for en stage-kanal.")]
+            public async Task SetupStageNotification(
+                [Summary("stage_kanal", "Stage-kanalen som skal konfigureres.")] IStageChannel stageChannel,
+                [Summary("rolle", "Rollen som skal nevnes for varsling.")] IRole roleToMention,
+                [Summary("varslings_kanal", "Valgfri: Tekstkanalen der varselet skal postes. Bruker standard hvis ikke angitt.")] ITextChannel? notificationChannel = null,
                 [Summary("tilpasset_melding", "Valgfri: Egendefinert melding (bruk {roleMention}, {stageTopic}, {stageChannelMention}).")] string? customMessage = null)
             {
                 await DeferAsync(ephemeral: true);
@@ -223,9 +223,10 @@ namespace MorningSignInBot.Interactions
                 {
                     StageChannelId = stageChannel.Id,
                     NotificationRoleId = roleToMention.Id,
-                    NotificationChannelId = notificationChannel.Id,
+                    NotificationChannelId = notificationChannel?.Id, // Can be null now
                     CustomMessage = customMessage, // Can be null
-                    GuildId = Context.Guild.Id // Store the Guild ID
+                    GuildId = Context.Guild.Id, // Store the Guild ID
+                    IsRoleOverrideEnabled = true // By default, we're using the provided role
                 };
 
                 try
@@ -244,10 +245,11 @@ namespace MorningSignInBot.Interactions
                             existing.NotificationChannelId = newConfig.NotificationChannelId;
                             existing.CustomMessage = newConfig.CustomMessage;
                             existing.GuildId = newConfig.GuildId; // Update GuildId too
+                            existing.IsRoleOverrideEnabled = true; // Set override since we're manually configuring
                             dbContext.StageNotificationConfigs.Update(existing);
                             _logger.LogInformation("Admin {AdminUser} updated stage notification config for Stage Channel {StageChannelId}", Context.User.Username, stageChannel.Id);
                             await dbContext.SaveChangesAsync();
-                            await FollowupAsync($"Oppdatert varsling for stage-kanal {stageChannel.Mention}.", ephemeral: true);
+                            await FollowupAsync($"Oppdatert varsling for stage-kanal {stageChannel.Mention}. Rollen {roleToMention.Mention} vil brukes for varslinger.", ephemeral: true);
                         }
                         else
                         {
@@ -255,7 +257,12 @@ namespace MorningSignInBot.Interactions
                             dbContext.StageNotificationConfigs.Add(newConfig);
                             _logger.LogInformation("Admin {AdminUser} added stage notification config for Stage Channel {StageChannelId}", Context.User.Username, stageChannel.Id);
                             await dbContext.SaveChangesAsync();
-                            await FollowupAsync($"Lagt til varsling for stage-kanal {stageChannel.Mention}.", ephemeral: true);
+                            
+                            string channelInfo = notificationChannel != null 
+                                ? $" Varsling vil skje i {notificationChannel.Mention}." 
+                                : " Varsling vil skje i standard kanal.";
+                                
+                            await FollowupAsync($"Lagt til varsling for stage-kanal {stageChannel.Mention}. Rollen {roleToMention.Mention} vil bli nevnt.{channelInfo}", ephemeral: true);
                         }
                     }
                 }
@@ -296,6 +303,69 @@ namespace MorningSignInBot.Interactions
                 {
                     _logger.LogError(ex, "Error removing stage notification for Stage Channel {StageChannelId}", stageChannel.Id);
                     await FollowupAsync("Kunne ikke fjerne konfigurasjonen. Sjekk loggene.", ephemeral: true);
+                }
+            }
+            
+            [SlashCommand("override", "Håndter manuell overstyring av rolle for en stage-kanal.")]
+            public async Task OverrideStageRole(
+                [Summary("stage_kanal", "Stage-kanalen som skal konfigureres.")] IStageChannel stageChannel,
+                [Summary("rolle", "Rollen som skal nevnes for varsling.")] IRole roleToMention,
+                [Summary("aktivert", "Om overstyring skal aktiveres (true) eller deaktiveres (false).")] bool enabled)
+            {
+                await DeferAsync(ephemeral: true);
+
+                if (Context.Guild == null)
+                {
+                    await FollowupAsync("Denne kommandoen må kjøres i en server.", ephemeral: true);
+                    return;
+                }
+
+                try
+                {
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var dbContext = scope.ServiceProvider.GetRequiredService<SignInContext>();
+                        var config = await dbContext.StageNotificationConfigs
+                            .FirstOrDefaultAsync(c => c.StageChannelId == stageChannel.Id);
+
+                        if (config == null)
+                        {
+                            // No existing config, create a new one with override
+                            config = new StageNotificationSetting
+                            {
+                                StageChannelId = stageChannel.Id,
+                                NotificationRoleId = roleToMention.Id,
+                                GuildId = Context.Guild.Id,
+                                IsRoleOverrideEnabled = enabled
+                            };
+                            
+                            dbContext.StageNotificationConfigs.Add(config);
+                            _logger.LogInformation("Admin {AdminUser} created new stage config with role override for Stage Channel {StageChannelId}", 
+                                Context.User.Username, stageChannel.Id);
+                        }
+                        else
+                        {
+                            // Update existing config
+                            config.NotificationRoleId = roleToMention.Id;
+                            config.IsRoleOverrideEnabled = enabled;
+                            dbContext.StageNotificationConfigs.Update(config);
+                            _logger.LogInformation("Admin {AdminUser} set role override to {Enabled} for Stage Channel {StageChannelId}", 
+                                Context.User.Username, enabled, stageChannel.Id);
+                        }
+                        
+                        await dbContext.SaveChangesAsync();
+                        
+                        string statusMessage = enabled 
+                            ? $"Aktivert overstyring for {stageChannel.Mention}. Rollen {roleToMention.Mention} vil nå brukes for varslinger, uavhengig av kanalrettigheter."
+                            : $"Deaktivert overstyring for {stageChannel.Mention}. Roller med tilgang til kanalen vil automatisk detekteres for varslinger.";
+                            
+                        await FollowupAsync(statusMessage, ephemeral: true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error setting role override for Stage Channel {StageChannelId}", stageChannel.Id);
+                    await FollowupAsync("Kunne ikke lagre rolleoverstyrings-konfigurasjonen. Sjekk loggene.", ephemeral: true);
                 }
             }
 
@@ -339,9 +409,12 @@ namespace MorningSignInBot.Interactions
                             var role = Context.Guild.GetRole(config.NotificationRoleId)?.Mention ?? $"`{config.NotificationRoleId}` (Ukjent)";
                             var notificationChannel = Context.Guild.GetTextChannel(config.NotificationChannelId ?? 0)?.Mention ?? "`Standard`"; // Handle nullable
                             var messagePreview = string.IsNullOrWhiteSpace(config.CustomMessage) ? "`Standard Melding`" : $"`{Truncate(config.CustomMessage, 50)}`";
+                            var roleMode = config.IsRoleOverrideEnabled 
+                                ? "🔒 **Overstyrt**" 
+                                : "🔄 **Auto-oppdaget**";
 
                             description.AppendLine($"**Stage:** {stage}");
-                            description.AppendLine($"  **Nevn Rolle:** {role}");
+                            description.AppendLine($"  **Nevn Rolle:** {role} ({roleMode})");
                             description.AppendLine($"  **Varslingskanal:** {notificationChannel}");
                             description.AppendLine($"  **Melding:** {messagePreview}");
                             description.AppendLine(); // Add spacing
