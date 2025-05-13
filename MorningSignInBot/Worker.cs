@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.Net;
+using System.IO; // Added for File operations
 
 namespace MorningSignInBot
 {
@@ -24,8 +25,6 @@ namespace MorningSignInBot
     {
         private readonly ILogger<Worker> _logger;
         private readonly DiscordSocketClient _client;
-        // Remove _settings field as we get it from _settingsOptions when needed
-        // private readonly DiscordSettings _settings; 
         private readonly IOptions<DiscordSettings> _settingsOptions;
         private readonly InteractionService _interactionService;
         private readonly IServiceProvider _services;
@@ -40,7 +39,7 @@ namespace MorningSignInBot
         public Worker(
             ILogger<Worker> logger,
             DiscordSocketClient client,
-            IOptions<DiscordSettings> settings, // Inject IOptions
+            IOptions<DiscordSettings> settings,
             InteractionService interactionService,
             IServiceProvider services,
             IServiceScopeFactory scopeFactory,
@@ -48,8 +47,7 @@ namespace MorningSignInBot
         {
             _logger = logger;
             _client = client;
-            _settingsOptions = settings; // Store IOptions
-            // _settings = settings.Value; // Don't store the value directly here anymore
+            _settingsOptions = settings;
             _interactionService = interactionService;
             _services = services;
             _scopeFactory = scopeFactory;
@@ -57,16 +55,15 @@ namespace MorningSignInBot
             _norwayCalendar = new NorwayPublicHoliday();
         }
 
-        // Helper method to read bot token from Docker secret file
         private async Task<string?> TryReadDockerSecretAsync()
         {
             const string secretPath = "/run/secrets/discord_bot_token";
-            if (File.Exists(secretPath))
+            if (File.Exists(secretPath)) // CS0103 resolved by using System.IO;
             {
                 try
                 {
                     _logger.LogInformation("Reading bot token from Docker secret");
-                    string token = await File.ReadAllTextAsync(secretPath);
+                    string token = await File.ReadAllTextAsync(secretPath); // CS0103 resolved by using System.IO;
                     return token.Trim();
                 }
                 catch (Exception ex)
@@ -81,7 +78,6 @@ namespace MorningSignInBot
             return null;
         }
 
-        // --- StartAsync ---
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Worker starting.");
@@ -89,10 +85,8 @@ namespace MorningSignInBot
             _client.Ready += OnReadyAsync;
             _client.InteractionCreated += HandleInteractionAsync;
 
-            // First, try to get token from Docker secret
             string? botToken = await TryReadDockerSecretAsync();
-            
-            // If Docker secret not found, use settings/environment
+
             if (string.IsNullOrWhiteSpace(botToken))
             {
                 _logger.LogInformation("No Docker secret found, checking configuration/environment");
@@ -100,46 +94,37 @@ namespace MorningSignInBot
                 botToken = currentSettings.BotToken;
             }
 
-            // --- Add Prompt Logic ---
             if (string.IsNullOrWhiteSpace(botToken))
             {
                 _logger.LogWarning("Bot token is missing from secrets and configuration/environment.");
-                Console.WriteLine("!!!!!! BOT TOKEN MISSING !!!!!!"); // Make it visible
+                Console.WriteLine("!!!!!! BOT TOKEN MISSING !!!!!!");
                 Console.Write("Please paste your Discord Bot Token and press Enter: ");
-                botToken = Console.ReadLine(); // Read from console input
-                
+                botToken = Console.ReadLine();
+
                 if (string.IsNullOrWhiteSpace(botToken))
                 {
                     _logger.LogCritical("No token provided via input. Exiting...");
-                    // Optionally, throw an exception or exit gracefully
                     throw new InvalidOperationException("Bot token was not provided.");
                 }
                 _logger.LogInformation("Bot token received via console input.");
             }
-            // ------------------------
 
-
-            if (string.IsNullOrWhiteSpace(botToken)) // Double check after potential input
+            if (string.IsNullOrWhiteSpace(botToken))
             {
                 _logger.LogCritical("BOT TOKEN IS MISSING. Cannot start.");
                 throw new ArgumentNullException(nameof(botToken), "Bot token cannot be empty.");
             }
 
-            // Use the determined botToken (from config/env OR manual input)
             await _client.LoginAsync(TokenType.Bot, botToken);
             await _client.StartAsync();
             await base.StartAsync(cancellationToken);
         }
 
-        // --- ExecuteAsync, StopAsync, OnReadyAsync, HandleInteractionAsync, HandleSignInButton ---
-        // --- ScheduleNextSignInMessage, TimerTickAsync, HandleStageStartedAsync, SanitizeForMention, LogAsync ---
-        // (Keep all other methods as they were in the previous corrected versions)
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Worker service is running. Discord client state: {State}", _client.ConnectionState);
             Console.WriteLine($"---> Worker service is running. Discord client state: {_client.ConnectionState}");
 
-            // Report Discord client state periodically
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -150,7 +135,6 @@ namespace MorningSignInBot
                 }
                 catch (OperationCanceledException)
                 {
-                    // Graceful exit on cancellation
                     break;
                 }
                 catch (Exception ex)
@@ -333,10 +317,8 @@ namespace MorningSignInBot
             }
         }
 
-
         private void ScheduleNextSignInMessage()
         {
-            // Use settings from IOptions
             var currentSettings = _settingsOptions.Value;
             DateTime now = DateTime.Now;
             DateTime nextRunTime = new DateTime(now.Year, now.Month, now.Day, currentSettings.SignInHour, currentSettings.SignInMinute, 0);
@@ -372,13 +354,11 @@ namespace MorningSignInBot
                 delay = TimeSpan.FromSeconds(10);
             }
 
-
             _logger.LogInformation("Scheduling next sign-in message check for: {RunTime:yyyy-MM-dd HH:mm:ss} (Local Time) (in {Delay})", nextRunTime, delay);
 
             _timer?.Dispose();
             _timer = new System.Threading.Timer(async _ => await TimerTickAsync(), null, delay, Timeout.InfiniteTimeSpan);
         }
-
 
         private async Task TimerTickAsync()
         {
@@ -414,8 +394,6 @@ namespace MorningSignInBot
                 ScheduleNextSignInMessage();
             }
         }
-
-
 
         private Task LogAsync(LogMessage log)
         {

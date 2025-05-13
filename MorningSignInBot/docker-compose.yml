@@ -2,56 +2,54 @@ version: '3.8'
 
 services:
   signin-bot:
-    image: morning-signin-bot:latest
+    image: ${REGISTRY:-mylocal}/morning-signin-bot:${TAG:-latest}
     build:
       context: .
-      dockerfile: Dockerfile
-    deploy:
-      mode: replicated
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
-      update_config:
-        parallelism: 1
-        delay: 10s
-        order: start-first
-    secrets:
-      - source: discord_bot_token
-        target: discord_bot_token
-        mode: 0444
-    # For development only - comment out in production
-    stdin_open: true # Keep STDIN open for Console.ReadLine()
-    tty: true        # Allocate a pseudo-TTY
+      dockerfile: dockerfile
+    volumes:
+      - bot-data:/app/data
+      - bot-logs:/app/Logs
     environment:
-      # Set non-secret defaults or ensure they are in .env
       - DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT:-Production}
       - TZ=${TZ:-Europe/Oslo}
-      # Keep other variables that should come from .env or host
+      - Discord__Token=${DISCORD_TOKEN:-file:///run/secrets/discord_bot_token}
+      - Discord__RegisterCommandsGlobally=true
       - Discord__TargetChannelId=${DISCORD_CHANNEL_ID}
       - Discord__Guilds__0__GuildId=${DISCORD_GUILD_ID}
       - Discord__Guilds__0__AdminRoleId=${DISCORD_ADMIN_ROLE_ID}
       - Discord__Guilds__0__GuildName=${DISCORD_GUILD_NAME:-Your Server Name}
       - Discord__SignInHour=${SIGNIN_HOUR:-8}
       - Discord__SignInMinute=${SIGNIN_MINUTE:-0}
-      # Logging configuration
       - Logging__LogLevel__Default=${Logging__LogLevel__Default:-Information}
       - Logging__LogLevel__MorningSignInBot=${Logging__LogLevel__MorningSignInBot:-Information}
       - Logging__LogLevel__Microsoft=${Logging__LogLevel__Microsoft:-Warning}
-    volumes:
-      - type: volume
-        source: bot-data
-        target: /app/data
-      - type: volume
-        source: bot-logs
-        target: /app/logs
+    secrets:
+      - source: discord_bot_token
+        target: /run/secrets/discord_bot_token 
+        mode: 0444
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3 
+        window: 120s
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
     logging:
       driver: "json-file"
       options:

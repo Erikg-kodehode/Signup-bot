@@ -1,59 +1,57 @@
-# --- Build Stage ---
+# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /source
 
-COPY *.csproj .
-RUN dotnet restore MorningSignInBot.csproj
+# Copy the .csproj files for the projects
+COPY MorningSignInBot.csproj .
+COPY ConsoleHost/ConsoleHost.csproj ./ConsoleHost/
 
+# Restore dependencies for the projects
+RUN dotnet restore "ConsoleHost/ConsoleHost.csproj"
+
+# Copy all other source code from the current project directory
 COPY . .
-RUN dotnet publish MorningSignInBot.csproj -c Release -o /app/publish --no-restore
 
-# --- Final Runtime Stage ---
+# Publish the application
+# WORKDIR is already /source (which is the project root in this context)
+RUN dotnet publish "ConsoleHost/ConsoleHost.csproj" -c Release -o /app/publish --no-restore
+
+# Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 
-# Install debugging tools while keeping the image as small as possible
+# Install common debugging tools & ca-certificates
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        procps \
-        iproute2 \
-        curl \
-        nano \
-        ca-certificates && \
+    procps iproute2 curl nano ca-certificates && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
+# Create non-root user and group
 RUN addgroup --system --gid 1000 appgroup && \
-    adduser --system --disabled-password --gecos "" --home "/app" --ingroup appgroup --shell "/bin/bash" --uid 1000 appuser && \
-    mkdir -p /app/data /app/logs /app/cores && \
-    chown -R appuser:appgroup /app
+    adduser --system --disabled-password --gecos "" --home "/app" --ingroup appgroup --shell "/bin/bash" --uid 1000 appuser
 
-# Copy published output
+# Create directories for data and logs
+RUN mkdir -p /app/data /app/Logs && \
+    chown -R appuser:appgroup /app && \
+    chmod -R 755 /app && \
+    chmod -R 777 /app/data /app/Logs
+
+# Copy published application from build stage
 COPY --from=build /app/publish .
 
-# Create directories and set proper ownership
-RUN mkdir -p /app/data /app/logs /app/cores && \
-    chown -R appuser:appgroup /app && \
-    chmod -R 755 /app/data /app/logs && \
-    chmod 644 /app/appsettings*.json && \
-    # Set core pattern to save to a specific directory
-    echo "/app/cores/core.%e.%p.%h.%t" > /proc/sys/kernel/core_pattern || true && \
-    # Enable core dumps
-    echo "kernel.core_pattern=/app/cores/core.%e.%p.%h.%t" >> /etc/sysctl.conf && \
-    echo "fs.suid_dumpable=2" >> /etc/sysctl.conf
+# Set timezone
+ENV TZ=Europe/Oslo
 
-# Configure core dumps for the application
-ENV DOTNET_EnableCrashDumps=1
-ENV DOTNET_DbgEnableMiniDump=1
-ENV DOTNET_CreateDumpDiagnostics=1
-ENV COMPlus_DbgEnableMiniDump=1
-ENV COMPlus_EnableDiagnostics=1
+# Healthcheck to verify bot is running
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Define volumes for persistent data
+VOLUME ["/app/data", "/app/Logs"]
 
 # Switch to non-root user
 USER appuser
 
-# Set timezone (can also be set via docker-compose)
-ENV TZ=Europe/Oslo
-
-ENTRYPOINT ["dotnet", "MorningSignInBot.dll"]
+# Application entry point
+ENTRYPOINT ["dotnet", "ConsoleHost.dll"]

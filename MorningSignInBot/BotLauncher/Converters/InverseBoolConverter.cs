@@ -12,8 +12,7 @@ namespace BotLauncher.Converters
             {
                 return !boolValue;
             }
-            
-            return false;
+            return value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -22,8 +21,7 @@ namespace BotLauncher.Converters
             {
                 return !boolValue;
             }
-            
-            return false;
+            return value;
         }
     }
 }

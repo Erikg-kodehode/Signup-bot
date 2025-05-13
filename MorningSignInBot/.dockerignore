@@ -31,3 +31,6 @@ Logs/
 
 # Ignore diagnostic tools
 DatabaseDiagnosticTool/
+
+# Ignore BotLauncher WPF application
+BotLauncher/

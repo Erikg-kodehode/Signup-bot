@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  signin-bot:
+    image: mylocal/morning-signin-bot:fixv4 # IMPORTANT: Use the exact tag from your 'docker build' command
+    # NO 'build:' section here for stack deploy
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3 
+        window: 120s
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    secrets:
+      - source: discord_bot_token
+        target: /run/secrets/discord_bot_token 
+        mode: 0444
+    environment:
+      - DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT:-Production}
+      - TZ=${TZ:-Europe/Oslo}
+      - Discord__TargetChannelId=${DISCORD_CHANNEL_ID}
+      - Discord__Guilds__0__GuildId=${DISCORD_GUILD_ID}
+      - Discord__Guilds__0__AdminRoleId=${DISCORD_ADMIN_ROLE_ID}
+      - Discord__Guilds__0__GuildName=${DISCORD_GUILD_NAME:-Your Server Name}
+      - Discord__SignInHour=${SIGNIN_HOUR:-8}
+      - Discord__SignInMinute=${SIGNIN_MINUTE:-0}
+      - Logging__LogLevel__Default=${Logging__LogLevel__Default:-Information}
+      - Logging__LogLevel__MorningSignInBot=${Logging__LogLevel__MorningSignInBot:-Information}
+      - Logging__LogLevel__Microsoft=${Logging__LogLevel__Microsoft:-Warning}
+    volumes:
+      - type: volume
+        source: bot-data 
+        target: /app/data
+      - type: volume
+        source: bot-logs 
+        target: /app/Logs # Matching case from Dockerfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
