@@ -7,7 +7,12 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using MorningSignInBot.Services;
+using BotLauncher.Services;
+using BotLauncher.Models;
 using Serilog;
+using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleHost;
@@ -26,50 +31,57 @@ public class Program
         {
             Log.Information("Starting up ConsoleHost");
             var host = CreateHostBuilder(args).Build();
-        
-        // Get the bot service and start it
-        var botService = host.Services.GetRequiredService<IBotService>();
-        
-        Console.WriteLine("Starting Discord bot...");
-        await botService.StartAsync();
-        
-        Console.WriteLine("Bot is running. Press Ctrl+C to stop.");
-        
-        // Set up cancellation token to handle Ctrl+C
-        var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (sender, e) => {
-            Console.WriteLine("Shutting down...");
-            cts.Cancel();
-            e.Cancel = true; // Prevent the process from terminating immediately
-        };
-        
-        try
-        {
-            // Keep the application running until cancellation is requested
-            await host.RunAsync(cts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            // This is expected when cancellation is requested
-            Log.Information("Operation was canceled");
+
+            // Get the bot service and start it
+            var botService = host.Services.GetRequiredService<IBotService>();
+
+            Console.WriteLine("Starting Discord bot...");
+            await botService.StartBotAsync();
+
+            Console.WriteLine("Bot is running. Press Ctrl+C to stop.");
+
+            // Set up cancellation token to handle Ctrl+C
+            var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                Console.WriteLine("Shutting down...");
+                cts.Cancel();
+                e.Cancel = true; // Prevent the process from terminating immediately
+            };
+
+            try
+            {
+                // Keep the application running until cancellation is requested
+                await host.RunAsync(cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // This is expected when cancellation is requested
+                Log.Information("Operation was canceled");
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+            }
+            finally
+            {
+                // Ensure bot is stopped properly
+                await botService.StopBotAsync();
+
+                // Dispose the host
+                if (host is IAsyncDisposable asyncDisposable)
+                    await asyncDisposable.DisposeAsync();
+                else
+                    host.Dispose();
+
+                Log.Information("Bot has been shut down");
+                Log.CloseAndFlush();
+            }
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Host terminated unexpectedly");
-        }
-        finally
-        {
-            // Ensure bot is stopped properly
-            await botService.StopAsync();
-            
-            // Dispose the host
-            if (host is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync();
-            else
-                host.Dispose();
-                
-            Log.Information("Bot has been shut down");
-            Log.CloseAndFlush();
+            Log.Fatal(ex, "Application start-up failed");
+            throw;
         }
     }
 

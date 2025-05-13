@@ -10,7 +10,7 @@ using Timer = System.Timers.Timer;
 
 namespace BotLauncher.Services
 {
-    public class BotService
+    public class BotService : IBotService
     {
         private readonly ConfigurationService _configService;
         private Process? _botProcess;
@@ -20,6 +20,8 @@ namespace BotLauncher.Services
 
         public event EventHandler<string>? LogReceived;
         public event EventHandler<BotState>? StateChanged;
+
+        public bool IsRunning => _status.State == BotState.Running;
 
         public BotService(ConfigurationService configService, BotStatus status)
         {

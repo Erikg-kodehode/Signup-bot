@@ -56,7 +56,7 @@ namespace MorningSignInBot.Interactions
                 var currentSettings = _discordSettingsMonitor.CurrentValue; // Use IOptionsMonitor for current value
                 var embedBuilder = new EmbedBuilder()
                     .WithTitle("Bot Konfigurering")
-                    .WithColor(Color.Blue)
+                    .WithColor(Discord.Color.Blue)
                     .WithCurrentTimestamp()
                     .WithFooter("Bruk /admin set-time eller /admin set-channel for å endre innstillinger")
                     .AddField("Innsjekking-tidspunkt", $"{currentSettings.SignInHour:00}:{currentSettings.SignInMinute:00}", true);
@@ -418,7 +418,7 @@ namespace MorningSignInBot.Interactions
 
                     var embedBuilder = new EmbedBuilder()
                         .WithTitle($"Innsjekkinger for {targetDate:dd. MMMM yyyy}" + (rolle != null ? $" (Rolle: {rolle.Name})" : ""))
-                        .WithColor(Color.Green)
+                        .WithColor(Discord.Color.Green)
                         .WithTimestamp(DateTimeOffset.Now);
 
                     var descriptionBuilder = new StringBuilder();
