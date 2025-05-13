@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MorningSignInBot.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b02050e6a0511ba694f39d8c771b139c130c830")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7115deb58c6559168ffd31a50fed8cadbbb5030a")]
 [assembly: System.Reflection.AssemblyProductAttribute("MorningSignInBot.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MorningSignInBot.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
