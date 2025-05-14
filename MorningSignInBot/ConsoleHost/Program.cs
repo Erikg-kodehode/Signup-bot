@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using MorningSignInBot.Services;
-using BotLauncher.Services;
-using BotLauncher.Models;
+using MorningSignInBot.Configuration;
 using Serilog;
 using System;
 using System.IO;
@@ -125,6 +124,9 @@ public class Program
 
     private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
+        // Configure Discord settings
+        services.Configure<DiscordSettings>(context.Configuration.GetSection("Discord"));
+        
         // Add bot service
         services.AddSingleton<IBotService, BotService>();
         

@@ -1,3 +1,55 @@
+# Morning Sign-In Bot - Console Setup
+
+The bot has been simplified to run as a console application. The WPF launcher has been removed in favor of a more straightforward configuration approach using appsettings.json and environment variables.
+
+## Configuration
+
+Configure the bot using either:
+
+1. appsettings.json:
+```json
+{
+  "Discord": {
+    "BotToken": "YOUR_BOT_TOKEN",
+    "TargetChannelId": "YOUR_CHANNEL_ID",
+    "SignInHour": 8,
+    "SignInMinute": 0,
+    "Guilds": [
+      {
+        "GuildId": YOUR_GUILD_ID,
+        "AdminRoleId": YOUR_ADMIN_ROLE_ID,
+        "GuildName": "Your Guild Name"
+      }
+    ]
+  }
+}
+```
+
+2. Environment Variables:
+```
+Discord__BotToken=YOUR_BOT_TOKEN
+Discord__TargetChannelId=YOUR_CHANNEL_ID
+Discord__SignInHour=8
+Discord__SignInMinute=0
+```
+
+## Running the Bot
+
+1. Navigate to the ConsoleHost directory
+2. Run `dotnet run`
+
+The bot will start and display its status in the console. Use Ctrl+C to gracefully shut down the bot.
+
+## Health Checks
+
+The bot includes a health check endpoint at `http://localhost:8080/health` which returns the current status of the bot.
+
+## Logs
+
+Logs are written to both the console and file:
+- Console: Real-time logging output
+- File: Written to /app/Logs/botlog-.txt (configurable in appsettings.json)
+
 # Morning Sign-In Bot (Norwegian)
 
 A simple Discord bot written in C# using Discord.Net for handling daily work sign-ins.
